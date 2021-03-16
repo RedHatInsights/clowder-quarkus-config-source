@@ -1,0 +1,22 @@
+= clowder-quarkus-config-source
+A config source for Quarkus to do app configuration for Quarkus via Clowderfile.
+
+== Usage
+
+Include the jar in your project's pom.xml
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.redhat.cloud.common</groupId>
+  <artifactId>clowder-quarkus-config-source</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+----
+
+Then add a file for the service loader to `META-INF/services/`:
+
+.io.smallrye.config.ConfigSourceFactory
+----
+com.redhat.cloud.common.clowder.configsource.ClowderConfigSourceFactory
+----
