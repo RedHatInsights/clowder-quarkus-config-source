@@ -20,3 +20,19 @@ Then add a file for the service loader to `META-INF/services/`:
 ----
 com.redhat.cloud.common.clowder.configsource.ClowderConfigSourceFactory
 ----
+
+There are two properties that determine the behaviour of the source
+
+
+.Properties
+|===
+|Name |Default Value
+
+|clowder.use-clowder-source
+|true
+
+|clowder.file
+|/cdappconfig/cdappconfig.json
+
+|===
+

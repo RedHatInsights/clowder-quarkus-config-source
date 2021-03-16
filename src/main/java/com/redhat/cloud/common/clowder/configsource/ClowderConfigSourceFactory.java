@@ -4,6 +4,7 @@ import io.smallrye.config.ConfigSourceContext;
 import io.smallrye.config.ConfigSourceFactory;
 import io.smallrye.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
+import org.jboss.logging.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,25 +21,30 @@ import java.util.OptionalInt;
  *
  */
 public class ClowderConfigSourceFactory implements ConfigSourceFactory {
+
+    Logger log = Logger.getLogger(getClass().getName());
+
     @Override
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
         // Check if the ClowderSource should be used at all.
         ConfigValue cv = configSourceContext.getValue("clowder.use-clowder-source");
-        if (cv != null) {
+        if (cv != null && cv.getValue() != null) {
             boolean useClowderSource = Boolean.parseBoolean(cv.getValue());
             if (!useClowderSource) {
+                log.info("ClowderConfigSource is disabled");
                 return Collections.emptyList();
             }
         }
 
         cv = configSourceContext.getValue("clowder.file");
-        String clowderConfig = null;
-        if (cv != null) {
+        String clowderConfig;
+        if (cv != null && cv.getValue() != null) {
             clowderConfig = cv.getValue();
         } else {
             clowderConfig = "/cdappconfig/cdappconfig.json";
         }
+        log.info("Using ClowderConfigSource with config at " + clowderConfig);
         // It should be used, so get the existing key-values and1
         // Supply them to our source.
         Map<String, ConfigValue> exProp = new HashMap<>();

@@ -1,7 +1,6 @@
 package com.redhat.cloud.common.clowder.configsource;
 
 import io.smallrye.config.ConfigValue;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
