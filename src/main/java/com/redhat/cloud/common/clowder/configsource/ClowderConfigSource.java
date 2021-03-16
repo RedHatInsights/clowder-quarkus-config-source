@@ -116,6 +116,7 @@ public class ClowderConfigSource implements ConfigSource {
             if (item.equals("username")) {
                 return dbObject.getString("username");
             }
+            String sslMode = dbObject.getString("sslMode");
             if (item.equals("password")) {
                 return dbObject.getString("password");
             }
@@ -129,10 +130,17 @@ public class ClowderConfigSource implements ConfigSource {
                     }
                 }
                 String jdbcUrl = String.format("jdbc:%s%s", tracing, hostPortDb);
+                if (sslMode != null && !sslMode.equals("disable")) {
+                    jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
+                }
                 return jdbcUrl;
             }
             if (item.equals("reactive.url")) {
                 String hostPortDb = getHostPortDb(dbObject);
+                if (sslMode != null && !sslMode.equals("disable")) {
+                    hostPortDb = hostPortDb + "?sslmode=" + sslMode;
+                }
+
                 return hostPortDb;
             }
         }

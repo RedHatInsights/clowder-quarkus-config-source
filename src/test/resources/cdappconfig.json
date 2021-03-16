@@ -6,7 +6,7 @@
     "name": "some-db",
     "password": "secret",
     "port": 15432,
-    "sslMode": "disable",
+    "sslMode": "require",
     "username": "aUser"
   },
   "endpoints": [

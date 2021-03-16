@@ -83,16 +83,14 @@ public class ConfigSourceTest {
         if (((String)appProps.get("quarkus.datasource.jdbc.url")).contains("tracing")) {
             expected += ":tracing";
         }
-        expected += ":postgresql://some.host:15432/some-db";
+        expected += ":postgresql://some.host:15432/some-db?sslmode=require";
 
         assertEquals(expected, url );
-        Assertions.fail("Need to check for ssl");
     }
 
     @Test
     void testDatabaseReactive() {
         String url = ccs.getValue("quarkus.datasource.reactive.url");
-        assertEquals("postgresql://some.host:15432/some-db", url );
-        Assertions.fail("Need to check for ssl ");
+        assertEquals("postgresql://some.host:15432/some-db?sslmode=require", url );
     }
 }
