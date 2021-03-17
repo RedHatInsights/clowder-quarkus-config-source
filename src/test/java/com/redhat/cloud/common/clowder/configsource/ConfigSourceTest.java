@@ -92,4 +92,10 @@ public class ConfigSourceTest {
         String url = ccs.getValue("quarkus.datasource.reactive.url");
         assertEquals("postgresql://some.host:15432/some-db?sslmode=require", url );
     }
+
+    @Test
+    void testUnchangedProperty() {
+        String value = ccs.getValue("quarkus.http.access-log.category");
+        assertEquals("access_log", value);
+    }
 }

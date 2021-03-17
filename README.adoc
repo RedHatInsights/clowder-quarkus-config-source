@@ -14,25 +14,28 @@ Include the jar in your project's pom.xml
 </dependency>
 ----
 
-Then add a file for the service loader to `META-INF/services/`:
+Then add the config file for the service loader at `META-INF/services/io.smallrye.config.ConfigSourceFactory`:
 
 .io.smallrye.config.ConfigSourceFactory
 ----
 com.redhat.cloud.common.clowder.configsource.ClowderConfigSourceFactory
 ----
 
-There are two properties that determine the behaviour of the source
-
+There are two properties that determine the behaviour of the Clowder source
 
 .Properties
 |===
 |Name |Default Value
 
-|clowder.use-clowder-source
-|true
+|clowder.use-source
+|false
 
 |clowder.file
 |/cdappconfig/cdappconfig.json
 
 |===
+
+.NOTE
+For Quarkus puting this in `application.properties` currently does not work.
+The flags need to be given via system property (`-Dclowder.use-source=true`) o environment (`CLOWDER_USE_SOURCE=TRUE java  -jar ...`)
 

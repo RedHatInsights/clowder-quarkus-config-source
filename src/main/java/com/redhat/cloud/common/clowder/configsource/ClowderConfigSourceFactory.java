@@ -28,13 +28,11 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
         // Check if the ClowderSource should be used at all.
-        ConfigValue cv = configSourceContext.getValue("clowder.use-clowder-source");
-        if (cv != null && cv.getValue() != null) {
-            boolean useClowderSource = Boolean.parseBoolean(cv.getValue());
-            if (!useClowderSource) {
-                log.info("ClowderConfigSource is disabled");
-                return Collections.emptyList();
-            }
+        ConfigValue cv = configSourceContext.getValue("clowder.use-source");
+
+        if (cv == null || cv.getValue() == null || !Boolean.parseBoolean(cv.getValue())) {
+            log.info("ClowderConfigSource is disabled");
+            return Collections.emptyList();
         }
 
         cv = configSourceContext.getValue("clowder.file");
