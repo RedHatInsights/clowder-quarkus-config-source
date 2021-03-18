@@ -18,12 +18,12 @@ public class ConfigSourceTest {
 
     static Properties appProps;
     static ClowderConfigSource ccs;
+    static final Map<String, ConfigValue> appPropsMap = new HashMap<>();
 
     @BeforeAll
     static void setup() throws Exception {
 
         appProps = new Properties();
-        Map<String, ConfigValue> appPropsMap = new HashMap<>();
         try (InputStream is = ConfigSourceTest.class.getResourceAsStream("/application.properties")){
             appProps.load(is);
 
@@ -31,7 +31,7 @@ public class ConfigSourceTest {
                         ConfigValue cv = new ConfigValue.ConfigValueBuilder()
                                 .withName(String.valueOf(k))
                                 .withValue(String.valueOf(v))
-                                .withConfigSourceName("application.properties") // TODO figure name + ordinal from Quarkus
+                                .withConfigSourceName("PropertiesConfigSource[source=application.properties]")
                                 .withConfigSourceOrdinal(250)
                                 .build();
                         appPropsMap.put((String) k,cv);
@@ -52,6 +52,13 @@ public class ConfigSourceTest {
     void testKafkaBootstrap() {
         String boostrap = ccs.getValue("kafka.bootstrap.servers");
         assertEquals("ephemeral-host.svc:29092", boostrap);
+    }
+
+    @Test
+    void testKafkaBootstrapServers() {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig2.json",appPropsMap);
+        String boostrap = ccs2.getValue("kafka.bootstrap.servers");
+        assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", boostrap);
     }
 
     @Test

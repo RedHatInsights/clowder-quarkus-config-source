@@ -17,8 +17,6 @@ import java.util.OptionalInt;
  * and feeds them into our new Clowder ConfigSource so that they can be
  * mangled there is needed.
  * <p/>
- * In case use-clowder-source is set to <tt>false</tt>, we skip this config source.
- *
  */
 public class ClowderConfigSourceFactory implements ConfigSourceFactory {
 
@@ -27,15 +25,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
     @Override
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
-        // Check if the ClowderSource should be used at all.
-        ConfigValue cv = configSourceContext.getValue("clowder.use-source");
-
-        if (cv == null || cv.getValue() == null || !Boolean.parseBoolean(cv.getValue())) {
-            log.info("ClowderConfigSource is disabled");
-            return Collections.emptyList();
-        }
-
-        cv = configSourceContext.getValue("clowder.file");
+        ConfigValue cv = configSourceContext.getValue("clowder.file");
         String clowderConfig;
         if (cv != null && cv.getValue() != null) {
             clowderConfig = cv.getValue();
@@ -43,8 +33,9 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
             clowderConfig = "/cdappconfig/cdappconfig.json";
         }
         log.info("Using ClowderConfigSource with config at " + clowderConfig);
-        // It should be used, so get the existing key-values and1
-        // Supply them to our source.
+
+        // It should be used, so get the existing key-values and
+        // supply them to our source.
         Map<String, ConfigValue> exProp = new HashMap<>();
         Iterator<String> stringIterator = configSourceContext.iterateNames();
         while (stringIterator.hasNext()) {

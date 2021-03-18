@@ -3,7 +3,7 @@ A config source for Quarkus to do app configuration for Quarkus via Clowderfile.
 
 == Usage
 
-Include the jar in your project's pom.xml
+Include the jar in your project's `pom.xml`:
 
 [source,xml]
 ----
@@ -14,28 +14,31 @@ Include the jar in your project's pom.xml
 </dependency>
 ----
 
-Then add the config file for the service loader at `META-INF/services/io.smallrye.config.ConfigSourceFactory`:
 
-.io.smallrye.config.ConfigSourceFactory
-----
-com.redhat.cloud.common.clowder.configsource.ClowderConfigSourceFactory
-----
+There is a property that determines the configuration file to use:
 
-There are two properties that determine the behaviour of the Clowder source
-
-.Properties
+.Property
 |===
 |Name |Default Value
 
-|clowder.use-source
-|false
 
 |clowder.file
 |/cdappconfig/cdappconfig.json
 
 |===
 
+If the configuration file is not found, a message is printed and the config source is effectively disabled.
+
+.Sample log output when the config file can't be found
+----
+2021-03-17 22:15:31,787 INFO  [com.red.clo.com.clo.con.ClowderConfigSourceFactory] (main) Using ClowderConfigSource with config at /cdappconfig/cdappconfig.json
+2021-03-17 22:15:31,794 WARN  [com.red.clo.com.clo.con.ClowderConfigSource] (main) Can't read clowder config from /cdappconfig/cdappconfig.json, not doing translations.
+
+----
+
 .NOTE
-For Quarkus puting this in `application.properties` currently does not work.
-The flags need to be given via system property (`-Dclowder.use-source=true`) o environment (`CLOWDER_USE_SOURCE=TRUE java  -jar ...`)
+For Quarkus you can put it in `application.properties`.
+The flag can also be given via system property (`-Dclowder.file=my-file.json`) or environment (`CLOWDER_FILE=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
+
+
 
