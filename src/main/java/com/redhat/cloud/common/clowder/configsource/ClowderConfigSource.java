@@ -19,7 +19,6 @@ import java.util.Set;
 /**
  * A Config source that is using the ClowderAppConfig
  */
-
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
@@ -28,6 +27,12 @@ public class ClowderConfigSource implements ConfigSource {
     JsonObject root;
     private boolean translate = true;
 
+    /**
+     * <p>Constructor for ClowderConfigSource.</p>
+     *
+     * @param configFile Name/Path of a file to read the config from.
+     * @param exProp {@link java.util.Map} containing the existing properties from e.g. application.properties.
+     */
     public ClowderConfigSource(String configFile, Map<String, ConfigValue> exProp) {
 
         existingValues = exProp;
@@ -78,8 +83,8 @@ public class ClowderConfigSource implements ConfigSource {
      * We need to look at the clowder provided data and eventually replace
      * the requested values from application.properties with what clowder
      * provides us, which may be different.
-     * @param configKey The key to look up
-     * @return The value.
+     *
+     * If the configfile was bad, we return the existing values.
      */
     @Override
     public String getValue(String configKey) {

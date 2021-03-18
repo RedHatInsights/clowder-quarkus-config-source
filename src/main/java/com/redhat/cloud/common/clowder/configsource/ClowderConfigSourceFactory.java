@@ -16,7 +16,6 @@ import java.util.OptionalInt;
  * This factory obtains the already existing config properties and values
  * and feeds them into our new Clowder ConfigSource so that they can be
  * mangled there is needed.
- * <p/>
  */
 public class ClowderConfigSourceFactory implements ConfigSourceFactory {
 
