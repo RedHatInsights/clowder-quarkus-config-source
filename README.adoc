@@ -1,0 +1,44 @@
+= clowder-quarkus-config-source
+A config source for Quarkus to do app configuration for Quarkus via Clowderfile.
+
+== Usage
+
+Include the jar in your project's `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.redhat.cloud.common</groupId>
+  <artifactId>clowder-quarkus-config-source</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+</dependency>
+----
+
+
+There is a property that determines the configuration file to use:
+
+.Property
+|===
+|Name |Default Value
+
+
+|clowder.file
+|/cdappconfig/cdappconfig.json
+
+|===
+
+If the configuration file is not found, a message is printed and the config source is effectively disabled.
+
+.Sample log output when the config file can't be found
+----
+2021-03-17 22:15:31,787 INFO  [com.red.clo.com.clo.con.ClowderConfigSourceFactory] (main) Using ClowderConfigSource with config at /cdappconfig/cdappconfig.json
+2021-03-17 22:15:31,794 WARN  [com.red.clo.com.clo.con.ClowderConfigSource] (main) Can't read clowder config from /cdappconfig/cdappconfig.json, not doing translations.
+
+----
+
+.NOTE
+For Quarkus you can put it in `application.properties`.
+The flag can also be given via system property (`-Dclowder.file=my-file.json`) or environment (`CLOWDER_FILE=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
+
+
+
