@@ -10,12 +10,12 @@ Include the jar in your project's `pom.xml`:
 <dependency>
   <groupId>com.redhat.cloud.common</groupId>
   <artifactId>clowder-quarkus-config-source</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.1</version>
 </dependency>
 ----
 
 
-There is a property that determines the configuration file to use:
+There is an optional property that determines the configuration file to use:
 
 .Property
 |===
@@ -27,7 +27,7 @@ There is a property that determines the configuration file to use:
 
 |===
 
-If the configuration file is not found, a message is printed and the config source is effectively disabled.
+If the configuration file is not found, a message is printed, and the config source is effectively disabled.
 
 .Sample log output when the config file can't be found
 ----
@@ -42,3 +42,6 @@ The flag can also be given via system property (`-Dclowder.file=my-file.json`) o
 
 
 
+== Further reading
+
+There is an https://medium.com/p/how-to-create-a-configsource-for-quarkus-that-knows-about-existing-properties-1d6e95e7385e[article] that further explains the working of this config source.
