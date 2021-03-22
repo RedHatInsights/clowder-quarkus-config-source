@@ -12,9 +12,14 @@ import javax.json.JsonReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A Config source that is using the ClowderAppConfig
@@ -152,6 +157,7 @@ public class ClowderConfigSource implements ConfigSource {
                 }
                 String sslMode = dbObject.getString("sslMode");
                 boolean useSsl = !sslMode.equals("disable");
+                boolean verifyFull = sslMode.equals("verify-full");
 
                 if (item.equals("password")) {
                     return dbObject.getString("password");
@@ -169,12 +175,18 @@ public class ClowderConfigSource implements ConfigSource {
                     if (useSsl) {
                         jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
                     }
+                    if (verifyFull) {
+                        jdbcUrl = jdbcUrl + " sslrootcert=" + createTempCertFile(dbObject);
+                    }
                     return jdbcUrl;
                 }
                 if (item.equals("reactive.url")) {
                     String hostPortDb = getHostPortDb(dbObject);
                     if (useSsl) {
                         hostPortDb = hostPortDb + "?sslmode=" + sslMode;
+                    }
+                    if (verifyFull) {
+                        hostPortDb = hostPortDb + " sslrootcert=" + createTempCertFile(dbObject);
                     }
 
                     return hostPortDb;
@@ -250,5 +262,19 @@ public class ClowderConfigSource implements ConfigSource {
                 host,
                 port,
                 dbName);
+    }
+
+    private String createTempCertFile(JsonObject dbObject) {
+        if (dbObject.containsKey("rdsCa")) {
+            byte[] cert = dbObject.getString("rdsCa").getBytes(UTF_8);
+            try {
+                File certFile = File.createTempFile("rds-ca-root", ".crt");
+                return Files.write(Path.of(certFile.getAbsolutePath()), cert).toString();
+            } catch (IOException e) {
+                throw new UncheckedIOException("RDS certificate file creation failed", e);
+            }
+        } else {
+            throw new IllegalStateException("'database.sslMode' is set to 'verify-full' in the Clowder config but the 'database.rdsCa' field is missing");
+        }
     }
 }

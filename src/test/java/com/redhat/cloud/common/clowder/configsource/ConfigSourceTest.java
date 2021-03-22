@@ -4,19 +4,29 @@ import io.smallrye.config.ConfigValue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
 public class ConfigSourceTest {
+
+    private static final Pattern VERIFY_FULL_URL_PATTERN = Pattern.compile("(jdbc:(tracing:)?)?postgresql://some.host:15432/some-db\\?sslmode=verify-full sslrootcert=(.+rds-ca-root.+\\.crt)");
+    private static final String EXPECTED_CERT = "Dummy value";
 
     static Properties appProps;
     static ClowderConfigSource ccs;
@@ -154,5 +164,31 @@ public class ConfigSourceTest {
     @Test
     void testUnknownClowderEndpoint() {
         assertThrows(IllegalStateException.class, () -> ccs.getValue("clowder.endpoints.unknown"));
+    }
+
+    @Test
+    void testVerifyFullSslMode() throws IOException {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_verify-full_valid.json", appPropsMap);
+
+        String jdbcUrl = ccs2.getValue("quarkus.datasource.jdbc.url");
+        verifyUrlAndCertFile(jdbcUrl);
+
+        String reactiveUrl = ccs2.getValue("quarkus.datasource.reactive.url");
+        verifyUrlAndCertFile(reactiveUrl);
+    }
+
+    private void verifyUrlAndCertFile(String url) throws IOException {
+        Matcher matcher = VERIFY_FULL_URL_PATTERN.matcher(url);
+        assertTrue(matcher.matches());
+        String cert = Files.readString(Path.of(matcher.group(3)), UTF_8);
+        assertEquals(EXPECTED_CERT, cert);
+    }
+
+    @Test
+    void testVerifyFullSslModeWithMissingRdsCa() {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_verify-full_invalid.json", appPropsMap);
+        assertThrows(IllegalStateException.class, () -> {
+            ccs2.getValue("quarkus.datasource.reactive.url");
+        });
     }
 }
