@@ -1,0 +1,74 @@
+{
+  "database": {
+    "adminPassword": "s3cr3t",
+    "adminUsername": "postgres",
+    "hostname": "some.host",
+    "name": "some-db",
+    "password": "secret",
+    "port": 15432,
+    "sslMode": "verify-full",
+    "username": "aUser",
+    "rdsCa": "MIIEBjCCAu6gAwIBAgIJAMc0ZzaSUK51MA0GCSqGSIb3DQEBCwUAMIGPMQswCQYDVQQGEwJVUzEQMA4GA1UEBwwHU2VhdHRsZTETMBEGA1UECAwKV2FzaGluZ3RvbjEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjETMBEGA1UECwwKQW1hem9uIFJEUzEgMB4GA1UEAwwXQW1hem9uIFJEUyBSb290IDIwMTkgQ0EwHhcNMTkwODIyMTcwODUwWhcNMjQwODIyMTcwODUwWjCBjzELMAkGA1UEBhMCVVMxEDAOBgNVBAcMB1NlYXR0bGUxEzARBgNVBAgMCldhc2hpbmd0b24xIjAgBgNVBAoMGUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4xEzARBgNVBAsMCkFtYXpvbiBSRFMxIDAeBgNVBAMMF0FtYXpvbiBSRFMgUm9vdCAyMDE5IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArXnF/E6/Qh+ku3hQTSKPMhQQlCpoWvnIthzX6MK3p5a0eXKZoWIjYcNNG6UwJjp4fUXl6glp53Jobn+tWNX88dNH2n8DVbppSwScVE2LpuL+94vY0EYE/XxN7svKea8YvlrqkUBKyxLxTjh+U/KrGOaHxz9v0l6ZNlDbuaZw3qIWdD/I6aNbGeRUVtpM6P+bWIoxVl/caQylQS6CEYUk+CpVyJSkopwJlzXT07tMoDL5WgX9O08KVgDNz9qP/IGtAcRduRcNioH3E9v981QO1zt/Gpb2f8NqAjUUCUZzOnij6mx9McZ+9cWX88CRzR0vQODWuZscgI08NvM69Fn2SQIDAQABo2MwYTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUc19g2LzLA5j0Kxc0LjZapmD/vB8wHwYDVR0jBBgwFoAUc19g2LzLA5j0Kxc0LjZapmD/vB8wDQYJKoZIhvcNAQELBQADggEBAHAG7WTmyjzPRIM85rVj+fWHsLIvqpw6DObIjMWokpliCeMINZFVynfgBKsf1ExwbvJNzYFXW6dihnguDG9VMPpi2up/ctQTN8tm9nDKOy08uNZoofMcNUZxKCEkVKZv+IL4oHoeayt8egtv3ujJM6V14AstMQ6SwvwvA93EP/Ug2e4WAXHucbI1NAbUgVDqp+DRdfvZkgYKryjTWd/0+1fS8X1bBZVWzl7eirNVnHbSH2ZDpNuY0SBd8dj5F6ld3t58ydZbrTHze7JJOd8ijySAp4/kiu9UfZWuTPABzDa/DSdz9Dk/zPW4CXXvhLmE02TA9/HeCw3KEHIwicNuEfw="
+  },
+  "endpoints": [
+    {
+      "app": "notifications",
+      "hostname": "n-api.svc",
+      "name": "api",
+      "port": 8000
+    },
+    {
+      "app": "notifications",
+      "hostname": "n-gw.svc",
+      "name": "gw",
+      "port": 8000
+    }
+  ],
+  "kafka": {
+    "brokers": [
+      {
+        "hostname": "ephemeral-host.svc",
+        "port": 29092
+      }
+    ],
+    "topics": [
+      {
+        "name": "platform-tmp-12345",
+        "requestedName": "platform.notifications.ingress"
+      },
+      {
+        "name": "platform-tmp-666",
+        "requestedName": "platform.notifications.alerts"
+      }
+    ]
+  },
+  "logging": {
+    "cloudwatch": {
+      "accessKeyId": "",
+      "logGroup": "",
+      "region": "",
+      "secretAccessKey": ""
+    },
+    "type": "null"
+  },
+  "metricsPath": "/metrics",
+  "metricsPort": 9000,
+  "objectStore": {
+    "accessKey": "secret",
+    "buckets": [
+      {
+        "accessKey": "more-secret",
+        "name": "returned-name",
+        "requestedName": "a-bucket",
+        "secretKey": "really-secret"
+      }
+    ],
+    "hostname": "minio12345.svc",
+    "port": 9000,
+    "secretKey": "another-secret",
+    "tls": false
+  },
+  "privatePort": 10000,
+  "publicPort": 8000,
+  "webPort": 8000
+}
