@@ -29,7 +29,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
         if (cv != null && cv.getValue() != null) {
             clowderConfig = cv.getValue();
         } else {
-            clowderConfig = "/cdappconfig/cdappconfig.json";
+            clowderConfig = "/cdapp/cdappconfig.json";
         }
         log.info("Using ClowderConfigSource with config at " + clowderConfig);
 
