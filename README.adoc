@@ -23,7 +23,7 @@ There is an optional property that determines the configuration file to use:
 
 
 |clowder.file
-|/cdappconfig/cdappconfig.json
+|/cdapp/cdappconfig.json
 
 |===
 
@@ -31,8 +31,8 @@ If the configuration file is not found, a message is printed, and the config sou
 
 .Sample log output when the config file can't be found
 ----
-2021-03-17 22:15:31,787 INFO  [com.red.clo.com.clo.con.ClowderConfigSourceFactory] (main) Using ClowderConfigSource with config at /cdappconfig/cdappconfig.json
-2021-03-17 22:15:31,794 WARN  [com.red.clo.com.clo.con.ClowderConfigSource] (main) Can't read clowder config from /cdappconfig/cdappconfig.json, not doing translations.
+2021-03-17 22:15:31,787 INFO  [com.red.clo.com.clo.con.ClowderConfigSourceFactory] (main) Using ClowderConfigSource with config at /cdapp/cdappconfig.json
+2021-03-17 22:15:31,794 WARN  [com.red.clo.com.clo.con.ClowderConfigSource] (main) Can't read clowder config from /cdapp/cdappconfig.json, not doing translations.
 
 ----
 
