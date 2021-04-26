@@ -37,7 +37,7 @@ If the configuration file is not found, a message is printed, and the config sou
 ----
 
 .NOTE
-For Quarkus you can put it in `application.properties`.
+For Quarkus, you can put it in `application.properties`.
 The flag can also be given via system property (`-Dclowder.file=my-file.json`) or environment (`CLOWDER_FILE=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
 
 

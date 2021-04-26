@@ -1,0 +1,36 @@
+{
+  "endpoints": [
+    {
+      "app": "notifications",
+      "hostname": "n-api.svc",
+      "name": "api",
+      "port": 8000
+    },
+    {
+      "app": "notifications",
+      "hostname": "n-gw.svc",
+      "name": "gw",
+      "port": 8000
+    }
+  ],
+  "metricsPath": "/metrics",
+  "metricsPort": 9000,
+  "objectStore": {
+    "accessKey": "secret",
+    "buckets": [
+      {
+        "accessKey": "more-secret",
+        "name": "returned-name",
+        "requestedName": "a-bucket",
+        "secretKey": "really-secret"
+      }
+    ],
+    "hostname": "minio12345.svc",
+    "port": 9000,
+    "secretKey": "another-secret",
+    "tls": false
+  },
+  "privatePort": 10000,
+  "publicPort": 8000,
+  "webPort": 8000
+}

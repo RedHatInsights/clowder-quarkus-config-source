@@ -22,6 +22,8 @@ import java.util.Set;
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
+    private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
+    private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
     JsonObject root;
@@ -47,6 +49,7 @@ public class ClowderConfigSource implements ConfigSource {
                 root = reader.readObject();
             } catch (IOException ioe) {
                 log.warn("Reading the clowder config failed, not doing translations: " + ioe.getMessage());
+                translate = false;
             }
         }
     }
@@ -99,8 +102,12 @@ public class ClowderConfigSource implements ConfigSource {
                 JsonNumber webPort = root.getJsonNumber("webPort");
                 return webPort.toString();
             }
+            JsonObject kafkaBase = root.getJsonObject("kafka");
             if (configKey.equals("kafka.bootstrap.servers")) {
-                JsonArray brokers = root.getJsonObject("kafka").getJsonArray("brokers");
+                if (kafkaBase==null) {
+                    throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
+                }
+                JsonArray brokers = kafkaBase.getJsonArray("brokers");
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < brokers.size(); i++) {
                     JsonObject broker = brokers.getJsonObject(i);
@@ -114,10 +121,13 @@ public class ClowderConfigSource implements ConfigSource {
             }
 
             if (configKey.startsWith("mp.messaging") && configKey.endsWith(".topic")) {
+                if (kafkaBase==null) {
+                    throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
+                }
                 // We need to find the replaced topic by first finding
                 // the requested name and then getting the replaced name
                 String requested = existingValues.get(configKey).getValue();
-                JsonArray topics = root.getJsonObject("kafka").getJsonArray("topics");
+                JsonArray topics = kafkaBase.getJsonArray("topics");
                 for (int i = 0; i < topics.size(); i++) {
                     JsonObject aTopic = topics.getJsonObject(i);
                     if (aTopic.getString("requestedName").equals(requested)) {
@@ -131,6 +141,9 @@ public class ClowderConfigSource implements ConfigSource {
             if (configKey.startsWith("quarkus.datasource")) {
                 String item = configKey.substring("quarkus.datasource.".length());
                 JsonObject dbObject = root.getJsonObject("database");
+                if (dbObject == null) {
+                    throw new IllegalStateException("No database section found");
+                }
                 if (item.equals("username")) {
                     return dbObject.getString("username");
                 }
@@ -143,8 +156,8 @@ public class ClowderConfigSource implements ConfigSource {
                 if (item.equals("jdbc.url")) {
                     String hostPortDb = getHostPortDb(dbObject);
                     String tracing = "";
-                    if (existingValues.containsKey("quarkus.datasource.jdbc.url")) {
-                        String url = existingValues.get("quarkus.datasource.jdbc.url").getValue();
+                    if (existingValues.containsKey(QUARKUS_DATASOURCE_JDBC_URL)) {
+                        String url = existingValues.get(QUARKUS_DATASOURCE_JDBC_URL).getValue();
                         if (url.contains(":tracing:")) {
                             tracing = "tracing:";
                         }
@@ -162,6 +175,31 @@ public class ClowderConfigSource implements ConfigSource {
                     }
 
                     return hostPortDb;
+                }
+            }
+
+            if (configKey.startsWith(QUARKUS_LOG_CLOUDWATCH)) {
+                JsonObject loggingObject = root.getJsonObject("logging");
+                if (loggingObject == null) {
+                    throw new IllegalStateException("No logging section found");
+                }
+                JsonObject cwObject = loggingObject.getJsonObject("cloudwatch");
+                if (cwObject == null) {
+                    throw new IllegalStateException("No cloudwatch section found in logging object");
+                }
+                int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
+                String sub = configKey.substring(prefixLen+1);
+                switch (sub) {
+                    case "access-key-id":
+                        return cwObject.getString("accessKeyId");
+                    case "access-key-secret":
+                        return cwObject.getString("secretAccessKey");
+                    case "region":
+                        return cwObject.getString("region");
+                    case "log-group":
+                        return cwObject.getString("logGroup");
+                    default:
+                        // fall through to fetching the value from application.properties
                 }
             }
         }

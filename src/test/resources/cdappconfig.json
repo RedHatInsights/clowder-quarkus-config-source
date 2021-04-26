@@ -43,10 +43,10 @@
   },
   "logging": {
     "cloudwatch": {
-      "accessKeyId": "",
-      "logGroup": "",
-      "region": "",
-      "secretAccessKey": ""
+      "accessKeyId": "my-key-id",
+      "logGroup": "my-log-group",
+      "region": "eu-central-1",
+      "secretAccessKey": "very-secret"
     },
     "type": "null"
   },
