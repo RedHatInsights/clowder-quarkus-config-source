@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -124,6 +125,24 @@ public class ConfigSourceTest {
         value = ccs.getValue("quarkus.log.cloudwatch.enabled"); // Does not exist.
         assertNull(value);
 
-
     }
+
+    @Test
+    void testNoKafkaSection() {
+        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", appPropsMap);
+        assertThrows(IllegalStateException.class, () -> source.getValue("kafka.bootstrap.servers"));
+    }
+
+    @Test
+    void testNoLogSection() {
+        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", appPropsMap);
+        assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.log.cloudwatch.region"));
+    }
+
+    @Test
+    void testNoDatabaseSection() {
+        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", appPropsMap);
+        assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.datasource.username"));
+    }
+
 }

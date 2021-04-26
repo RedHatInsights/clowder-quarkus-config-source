@@ -22,6 +22,8 @@ import java.util.Set;
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
+    private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
+    private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
     JsonObject root;
@@ -139,6 +141,9 @@ public class ClowderConfigSource implements ConfigSource {
             if (configKey.startsWith("quarkus.datasource")) {
                 String item = configKey.substring("quarkus.datasource.".length());
                 JsonObject dbObject = root.getJsonObject("database");
+                if (dbObject == null) {
+                    throw new IllegalStateException("No database section found");
+                }
                 if (item.equals("username")) {
                     return dbObject.getString("username");
                 }
@@ -151,8 +156,8 @@ public class ClowderConfigSource implements ConfigSource {
                 if (item.equals("jdbc.url")) {
                     String hostPortDb = getHostPortDb(dbObject);
                     String tracing = "";
-                    if (existingValues.containsKey("quarkus.datasource.jdbc.url")) {
-                        String url = existingValues.get("quarkus.datasource.jdbc.url").getValue();
+                    if (existingValues.containsKey(QUARKUS_DATASOURCE_JDBC_URL)) {
+                        String url = existingValues.get(QUARKUS_DATASOURCE_JDBC_URL).getValue();
                         if (url.contains(":tracing:")) {
                             tracing = "tracing:";
                         }
@@ -173,7 +178,7 @@ public class ClowderConfigSource implements ConfigSource {
                 }
             }
 
-            if (configKey.startsWith("quarkus.log.cloudwatch")) {
+            if (configKey.startsWith(QUARKUS_LOG_CLOUDWATCH)) {
                 JsonObject loggingObject = root.getJsonObject("logging");
                 if (loggingObject == null) {
                     throw new IllegalStateException("No logging section found");
@@ -182,7 +187,7 @@ public class ClowderConfigSource implements ConfigSource {
                 if (cwObject == null) {
                     throw new IllegalStateException("No cloudwatch section found in logging object");
                 }
-                int prefixLen = "quarkus.log.cloudwatch".length();
+                int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
                 String sub = configKey.substring(prefixLen+1);
                 switch (sub) {
                     case "access-key-id":
@@ -194,7 +199,7 @@ public class ClowderConfigSource implements ConfigSource {
                     case "log-group":
                         return cwObject.getString("logGroup");
                     default:
-                        ; // fall through to fetching the value from application.properties
+                        // fall through to fetching the value from application.properties
                 }
             }
         }

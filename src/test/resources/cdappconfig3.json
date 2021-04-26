@@ -1,14 +1,4 @@
 {
-  "database": {
-    "adminPassword": "s3cr3t",
-    "adminUsername": "postgres",
-    "hostname": "some.host",
-    "name": "some-db",
-    "password": "secret",
-    "port": 15432,
-    "sslMode": "require",
-    "username": "aUser"
-  },
   "endpoints": [
     {
       "app": "notifications",
@@ -23,15 +13,6 @@
       "port": 8000
     }
   ],
-  "logging": {
-    "cloudwatch": {
-      "accessKeyId": "my-key-id",
-      "logGroup": "my-log-group",
-      "region": "eu-central-1",
-      "secretAccessKey": "very-secret"
-    },
-    "type": "null"
-  },
   "metricsPath": "/metrics",
   "metricsPort": 9000,
   "objectStore": {
