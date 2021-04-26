@@ -23,24 +23,6 @@
       "port": 8000
     }
   ],
-  "kafka": {
-    "brokers": [
-      {
-        "hostname": "ephemeral-host.svc",
-        "port": 29092
-      }
-    ],
-    "topics": [
-      {
-        "name": "platform-tmp-12345",
-        "requestedName": "platform.notifications.ingress"
-      },
-      {
-        "name": "platform-tmp-666",
-        "requestedName": "platform.notifications.alerts"
-      }
-    ]
-  },
   "logging": {
     "cloudwatch": {
       "accessKeyId": "my-key-id",

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  *
@@ -104,5 +105,25 @@ public class ConfigSourceTest {
     void testUnchangedProperty() {
         String value = ccs.getValue("quarkus.http.access-log.category");
         assertEquals("access_log", value);
+    }
+
+    @Test
+    void testLogCw() {
+        String value = ccs.getValue("quarkus.log.cloudwatch.access-key-id");
+        assertEquals("my-key-id", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.access-key-secret");
+        assertEquals("very-secret", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.region");
+        assertEquals("eu-central-1", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.log-group");
+        assertEquals("my-log-group", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.log-stream-name");
+        assertEquals("my-log-stream", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.level");
+        assertEquals("INFO", value);
+        value = ccs.getValue("quarkus.log.cloudwatch.enabled"); // Does not exist.
+        assertNull(value);
+
+
     }
 }
