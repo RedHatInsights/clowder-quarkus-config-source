@@ -150,4 +150,9 @@ public class ConfigSourceTest {
         assertEquals("n-api.svc:8000", ccs.getValue("clowder.endpoints.api"));
         assertEquals("n-gw.svc:8000", ccs.getValue("clowder.endpoints.gw"));
     }
+
+    @Test
+    void testUnknownClowderEndpoint() {
+        assertThrows(IllegalStateException.class, () -> ccs.getValue("clowder.endpoints.unknown"));
+    }
 }
