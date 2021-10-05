@@ -145,4 +145,14 @@ public class ConfigSourceTest {
         assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.datasource.username"));
     }
 
+    @Test
+    void testClowderEndpoints() {
+        assertEquals("n-api.svc:8000", ccs.getValue("clowder.endpoints.api"));
+        assertEquals("n-gw.svc:8000", ccs.getValue("clowder.endpoints.gw"));
+    }
+
+    @Test
+    void testUnknownClowderEndpoint() {
+        assertThrows(IllegalStateException.class, () -> ccs.getValue("clowder.endpoints.unknown"));
+    }
 }

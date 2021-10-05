@@ -22,8 +22,11 @@ import java.util.Set;
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
+
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
+    private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
+
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
     JsonObject root;
@@ -201,6 +204,21 @@ public class ClowderConfigSource implements ConfigSource {
                     default:
                         // fall through to fetching the value from application.properties
                 }
+            }
+
+            if (configKey.startsWith(CLOWDER_ENDPOINTS)) {
+                JsonArray endpoints = root.getJsonArray("endpoints");
+                if (endpoints == null) {
+                    throw new IllegalStateException("No endpoints section found");
+                }
+                String endpointName = configKey.substring(CLOWDER_ENDPOINTS.length());
+                for (int i = 0; i < endpoints.size(); i++) {
+                    JsonObject endpoint = endpoints.getJsonObject(i);
+                    if (endpoint.getString("name").equals(endpointName)) {
+                        return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
+                    }
+                }
+                throw new IllegalStateException("Endpoint with name '" + endpointName + "' not found in the endpoints section");
             }
         }
 
