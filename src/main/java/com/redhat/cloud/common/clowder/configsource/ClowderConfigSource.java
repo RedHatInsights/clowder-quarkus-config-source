@@ -207,18 +207,23 @@ public class ClowderConfigSource implements ConfigSource {
             }
 
             if (configKey.startsWith(CLOWDER_ENDPOINTS)) {
-                JsonArray endpoints = root.getJsonArray("endpoints");
-                if (endpoints == null) {
-                    throw new IllegalStateException("No endpoints section found");
-                }
-                String endpointName = configKey.substring(CLOWDER_ENDPOINTS.length());
-                for (int i = 0; i < endpoints.size(); i++) {
-                    JsonObject endpoint = endpoints.getJsonObject(i);
-                    if (endpoint.getString("name").equals(endpointName)) {
-                        return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
+                try {
+                    JsonArray endpoints = root.getJsonArray("endpoints");
+                    if (endpoints == null) {
+                        throw new IllegalStateException("No endpoints section found");
                     }
+                    String endpointName = configKey.substring(CLOWDER_ENDPOINTS.length());
+                    for (int i = 0; i < endpoints.size(); i++) {
+                        JsonObject endpoint = endpoints.getJsonObject(i);
+                        if (endpoint.getString("name").equals(endpointName)) {
+                            return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
+                        }
+                    }
+                    throw new IllegalStateException("Endpoint with name '" + endpointName + "' not found in the endpoints section");
+                } catch (IllegalStateException e) {
+                    log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
+                    throw e;
                 }
-                throw new IllegalStateException("Endpoint with name '" + endpointName + "' not found in the endpoints section");
             }
         }
 
