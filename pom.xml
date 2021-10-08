@@ -4,7 +4,7 @@
 
   <groupId>com.redhat.cloud.common</groupId>
   <artifactId>clowder-quarkus-config-source</artifactId>
-  <version>0.1.7-SNAPSHOT</version>
+  <version>0.2.0</version>
   <packaging>jar</packaging>
 
   <name>Clowder Quarkus Config Source</name>
@@ -33,7 +33,7 @@
     <connection>scm:git:https://github.com/RedHatInsights/clowder-quarkus-config-source</connection>
     <url>scm:git:https://github.com/RedHatInsights/clowder-quarkus-config-source.git</url>
     <developerConnection>scm:git:https://github.com/RedHatInsights/clowder-quarkus-config-source.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.2.0</tag>
   </scm>
 
   <developers>
