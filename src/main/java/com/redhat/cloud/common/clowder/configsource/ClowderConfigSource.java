@@ -215,7 +215,7 @@ public class ClowderConfigSource implements ConfigSource {
                     String requestedEndpoint = configKey.substring(CLOWDER_ENDPOINTS.length());
                     for (int i = 0; i < endpoints.size(); i++) {
                         JsonObject endpoint = endpoints.getJsonObject(i);
-                        String currentEndpoint = endpoint.getString("app") + "." + endpoint.getString("name");
+                        String currentEndpoint = endpoint.getString("app") + "-" + endpoint.getString("name");
                         if (currentEndpoint.equals(requestedEndpoint)) {
                             return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
                         }
