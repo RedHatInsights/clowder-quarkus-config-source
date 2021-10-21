@@ -212,14 +212,15 @@ public class ClowderConfigSource implements ConfigSource {
                     if (endpoints == null) {
                         throw new IllegalStateException("No endpoints section found");
                     }
-                    String endpointName = configKey.substring(CLOWDER_ENDPOINTS.length());
+                    String requestedEndpoint = configKey.substring(CLOWDER_ENDPOINTS.length());
                     for (int i = 0; i < endpoints.size(); i++) {
                         JsonObject endpoint = endpoints.getJsonObject(i);
-                        if (endpoint.getString("name").equals(endpointName)) {
+                        String currentEndpoint = endpoint.getString("app") + "." + endpoint.getString("name");
+                        if (currentEndpoint.equals(requestedEndpoint)) {
                             return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
                         }
                     }
-                    throw new IllegalStateException("Endpoint with name '" + endpointName + "' not found in the endpoints section");
+                    throw new IllegalStateException("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;

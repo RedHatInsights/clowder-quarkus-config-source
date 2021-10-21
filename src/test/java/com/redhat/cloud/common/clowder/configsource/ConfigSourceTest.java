@@ -147,8 +147,8 @@ public class ConfigSourceTest {
 
     @Test
     void testClowderEndpoints() {
-        assertEquals("n-api.svc:8000", ccs.getValue("clowder.endpoints.api"));
-        assertEquals("n-gw.svc:8000", ccs.getValue("clowder.endpoints.gw"));
+        assertEquals("n-api.svc:8000", ccs.getValue("clowder.endpoints.notifications.api"));
+        assertEquals("n-gw.svc:8000", ccs.getValue("clowder.endpoints.notifications.gw"));
     }
 
     @Test
