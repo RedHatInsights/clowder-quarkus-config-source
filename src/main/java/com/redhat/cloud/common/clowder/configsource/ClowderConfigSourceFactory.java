@@ -24,7 +24,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
     @Override
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
-        ConfigValue cv = configSourceContext.getValue("clowder.file");
+        ConfigValue cv = configSourceContext.getValue("acg.config");
         String clowderConfig;
         if (cv != null && cv.getValue() != null) {
             clowderConfig = cv.getValue();

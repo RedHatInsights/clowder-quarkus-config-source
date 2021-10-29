@@ -14,7 +14,7 @@ public class ConfigSourceFactoryTest {
 
     @BeforeAll
     static void init() {
-        System.setProperty("clowder.file","target/test-classes/cdappconfig.json");
+        System.setProperty("acg.config","target/test-classes/cdappconfig.json");
     }
 
     @Test
