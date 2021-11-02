@@ -22,7 +22,7 @@ There is an optional property that determines the configuration file to use:
 |Name |Default Value
 
 
-|clowder.file
+|acg.config
 |/cdapp/cdappconfig.json
 
 |===
@@ -38,7 +38,7 @@ If the configuration file is not found, a message is printed, and the config sou
 
 .NOTE
 For Quarkus, you can put it in `application.properties`.
-The flag can also be given via system property (`-Dclowder.file=my-file.json`) or environment (`CLOWDER_FILE=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
+The flag can also be given via system property (`-Dacg.config=my-file.json`) or environment (`ACG_CONFIG=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
 
 
 
