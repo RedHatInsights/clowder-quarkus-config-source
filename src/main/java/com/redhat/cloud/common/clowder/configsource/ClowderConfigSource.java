@@ -269,6 +269,11 @@ public class ClowderConfigSource implements ConfigSource {
             byte[] cert = dbObject.getString("rdsCa").getBytes(UTF_8);
             try {
                 File certFile = File.createTempFile("rds-ca-root", ".crt");
+                try {
+                    certFile.deleteOnExit();
+                } catch (SecurityException e) {
+                    log.warn("Delete on exit of the RDS cert file denied by the security manager", e);
+                }
                 return Files.write(Path.of(certFile.getAbsolutePath()), cert).toString();
             } catch (IOException e) {
                 throw new UncheckedIOException("RDS certificate file creation failed", e);
