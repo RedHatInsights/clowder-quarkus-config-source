@@ -176,7 +176,7 @@ public class ClowderConfigSource implements ConfigSource {
                         jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
                     }
                     if (verifyFull) {
-                        jdbcUrl = jdbcUrl + " sslrootcert=" + createTempCertFile(dbObject);
+                        jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempCertFile(dbObject);
                     }
                     return jdbcUrl;
                 }
@@ -186,7 +186,7 @@ public class ClowderConfigSource implements ConfigSource {
                         hostPortDb = hostPortDb + "?sslmode=" + sslMode;
                     }
                     if (verifyFull) {
-                        hostPortDb = hostPortDb + " sslrootcert=" + createTempCertFile(dbObject);
+                        hostPortDb = hostPortDb + "&sslrootcert=" + createTempCertFile(dbObject);
                     }
 
                     return hostPortDb;
