@@ -180,16 +180,24 @@ public class ClowderConfigSource implements ConfigSource {
                     }
                     return jdbcUrl;
                 }
-                if (item.equals("reactive.url")) {
-                    String hostPortDb = getHostPortDb(dbObject);
-                    if (useSsl) {
-                        hostPortDb = hostPortDb + "?sslmode=" + sslMode;
+                if (item.startsWith("reactive.")) {
+                    if (item.equals("reactive.url")) {
+                        return getHostPortDb(dbObject);
+                    }
+                    if (item.equals("reactive.postgresql.ssl-mode")) {
+                        return sslMode;
                     }
                     if (verifyFull) {
-                        hostPortDb = hostPortDb + "&sslrootcert=" + createTempCertFile(dbObject);
+                        if (item.equals("reactive.hostname-verification-algorithm")) {
+                            return "HTTPS";
+                        }
+                        if (item.equals("reactive.trust-certificate-pem")) {
+                            return "true";
+                        }
+                        if (item.equals("reactive.trust-certificate-pem.certs")) {
+                            return createTempCertFile(dbObject);
+                        }
                     }
-
-                    return hostPortDb;
                 }
             }
 

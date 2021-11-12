@@ -109,7 +109,10 @@ public class ConfigSourceTest {
     @Test
     void testDatabaseReactive() {
         String url = ccs.getValue("quarkus.datasource.reactive.url");
-        assertEquals("postgresql://some.host:15432/some-db?sslmode=require", url );
+        assertEquals("postgresql://some.host:15432/some-db", url);
+
+        String sslMode = ccs.getValue("quarkus.datasource.reactive.postgresql.ssl-mode");
+        assertEquals("require", sslMode);
     }
 
     @Test
@@ -174,7 +177,15 @@ public class ConfigSourceTest {
         verifyUrlAndCertFile(jdbcUrl);
 
         String reactiveUrl = ccs2.getValue("quarkus.datasource.reactive.url");
-        verifyUrlAndCertFile(reactiveUrl);
+        assertEquals("postgresql://some.host:15432/some-db", reactiveUrl);
+        String sslMode = ccs2.getValue("quarkus.datasource.reactive.postgresql.ssl-mode");
+        assertEquals("verify-full", sslMode);
+        String algorithm = ccs2.getValue("quarkus.datasource.reactive.hostname-verification-algorithm");
+        assertEquals("HTTPS", algorithm);
+        String pemEnabled = ccs2.getValue("quarkus.datasource.reactive.trust-certificate-pem");
+        assertEquals("true", pemEnabled);
+        String certs = ccs2.getValue("quarkus.datasource.reactive.trust-certificate-pem.certs");
+        assertTrue(certs.endsWith(".crt"));
     }
 
     private void verifyUrlAndCertFile(String url) throws IOException {
@@ -188,7 +199,7 @@ public class ConfigSourceTest {
     void testVerifyFullSslModeWithMissingRdsCa() {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_verify-full_invalid.json", appPropsMap);
         assertThrows(IllegalStateException.class, () -> {
-            ccs2.getValue("quarkus.datasource.reactive.url");
+            ccs2.getValue("quarkus.datasource.jdbc.url");
         });
     }
 }
