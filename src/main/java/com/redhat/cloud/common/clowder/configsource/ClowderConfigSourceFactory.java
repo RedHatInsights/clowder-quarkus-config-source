@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.OptionalInt;
 
+import static io.smallrye.config.Expressions.withoutExpansion;
+
 /**
  * This factory obtains the already existing config properties and values
  * and feeds them into our new Clowder ConfigSource so that they can be
@@ -37,13 +39,25 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
         // supply them to our source.
         Map<String, ConfigValue> exProp = new HashMap<>();
         Iterator<String> stringIterator = configSourceContext.iterateNames();
-        while (stringIterator.hasNext()) {
-            String key = stringIterator.next();
-            ConfigValue value = configSourceContext.getValue(key);
-            exProp.put(key,value);
-        }
 
-        return Collections.singletonList(new com.redhat.cloud.common.clowder.configsource.ClowderConfigSource(clowderConfig, exProp));
+        /*
+         * A config value expansion happens when an expression wrapped into `${ }` is resolved.
+         * For example, if the configuration contains `foo=1234` and `bar=${foo}`, then `bar`
+         * will be resolved and expanded to the value `1234`.
+         * However, if an expression cannot be resolved because it refers to a missing config key,
+         * then the expansion fails and a NoSuchElementException is thrown.
+         * Such a throw should only happen when the config value is actually used and not here.
+         * That's why we need to disable the config values expansion.
+         */
+        withoutExpansion(() -> {
+            while (stringIterator.hasNext()) {
+                String key = stringIterator.next();
+                ConfigValue value = configSourceContext.getValue(key);
+                exProp.put(key, value);
+            }
+        });
+
+        return Collections.singletonList(new ClowderConfigSource(clowderConfig, exProp));
     }
 
     @Override
