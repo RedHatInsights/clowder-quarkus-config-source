@@ -237,7 +237,7 @@ public class ClowderConfigSource implements ConfigSource {
                         JsonObject endpoint = endpoints.getJsonObject(i);
                         String currentEndpoint = endpoint.getString("app") + "-" + endpoint.getString("name");
                         if (currentEndpoint.equals(requestedEndpoint)) {
-                            return endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
+                            return "http://" + endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
                         }
                     }
                     throw new IllegalStateException("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
