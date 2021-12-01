@@ -40,7 +40,80 @@ If the configuration file is not found, a message is printed, and the config sou
 For Quarkus, you can put it in `application.properties`.
 The flag can also be given via system property (`-Dacg.config=my-file.json`) or environment (`ACG_CONFIG=myfile.json java  -jar ...`), which then override the settings in `application.properties`.
 
+== Retrieving an endpoint URL from Clowder
 
+Depending on your `ClowdApp` dependencies, Clowder may provide some endpoints configuration as shown below:
+
+[source,json]
+----
+{
+  "endpoints":[
+    {
+      "app":"notifications-backend",
+      "hostname":"notifications-backend-service.ephemeral-24.svc",
+      "name":"service",
+      "port":8000
+    },
+    {
+      "app":"rbac",
+      "hostname":"rbac-service.ephemeral-24.svc",
+      "name":"service",
+      "port":8000
+    }
+  ]
+}
+----
+
+Each Clowder endpoint URL can be injected into your Quarkus configuration file:
+
+[source,application.properties]
+----
+rbac-url=${clowder.endpoints.rbac-service:http://localhost:8080}
+----
+
+In this example, the `clowder.endpoints.rbac-service` configuration key is composed of:
+
+- the `clowder.endpoints.` prefix which is always required
+- the Clowder endpoint `app` field: `rbac`
+- a fixed separator: `-`
+- the Clowder endpoint `name` field: `service`
+
+The resulting value will be `http://rbac-service.ephemeral-24.svc:8000` which is composed of:
+
+- a fixed prefix: `http://`
+- the Clowder endpoint `hostname` field: `rbac-service.ephemeral-24.svc`
+- a fixed separator: `:`
+- the Clowder endpoint `port` field: `8000`
+
+If the `clowder.endpoints.rbac-service` configuration key is not found, then the `http://localhost:8080` default value will be used.
+That default value is optional.
+Learn more about the Quarkus configuration properties and how the properties expressions are expanded in the https://quarkus.io/guides/config-reference#property-expressions[Configuration Reference Guide].
+
+The injection of a Clowder endpoint URL can also be done from your application code:
+
+[source,java]
+----
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class MyService {
+
+    @ConfigProperty(name = "clowder.endpoints.rbac-service", defaultValue = "http://localhost:8080")
+    String myRbacUrl;
+
+    public void doSomething() {
+        // myRbacUrl can be used here
+    }
+
+    public void doSomethingElse() {
+        String myOtherRbacUrl = ConfigProvider.getConfig().getValue("clowder.endpoints.rbac-service", String.class);
+        // myRbacUrl and myOtherRbacUrl can be used here
+    }
+}
+----
 
 == Further reading
 
