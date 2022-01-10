@@ -1,22 +1,19 @@
 package com.redhat.cloud.common.clowder.configsource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.logging.Logger;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -27,14 +24,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
+    public static final String KAFKA_SASL_MECHANISM = "SCRAM-SHA-512";
+    public static final String KAFKA_SASL_SECURITY_PROTOCOL = "SASL_SSL";
 
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
+    private static List<String> KAFKA_SASL_KEYS = List.of(
+            "kafka.sasl.jaas.config", "kafka.sasl.mechanism", "kafka.security.protocol", "kafka.ssl.truststore.location");
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
-    JsonObject root;
+    private ClowderConfig root;
     private boolean translate = true;
 
     /**
@@ -50,13 +51,12 @@ public class ClowderConfigSource implements ConfigSource {
         if (!file.canRead()) {
             log.warn("Can't read clowder config from " + file.getAbsolutePath() + ", not doing translations.");
             translate = false;
-        }
-        else {
-            try (FileInputStream fis = new FileInputStream(file)) {
-                JsonReader reader = Json.createReader(fis);
-                root = reader.readObject();
-            } catch (IOException ioe) {
-                log.warn("Reading the clowder config failed, not doing translations: " + ioe.getMessage());
+        } else {
+            try {
+                String configJson = Files.readString(file.toPath());
+                root = new ObjectMapper().readValue(configJson, ClowderConfig.class);
+            } catch (IOException e) {
+                log.warn("Reading the clowder config failed, not doing translations", e);
                 translate = false;
             }
         }
@@ -107,63 +107,77 @@ public class ClowderConfigSource implements ConfigSource {
         if (translate) {
 
             if (configKey.equals("quarkus.http.port")) {
-                JsonNumber webPort = root.getJsonNumber("webPort");
-                return webPort.toString();
+                return String.valueOf(root.webPort);
             }
-            JsonObject kafkaBase = root.getJsonObject("kafka");
             if (configKey.equals("kafka.bootstrap.servers")) {
-                if (kafkaBase==null) {
+                if (root.kafka == null) {
                     throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
                 }
-                JsonArray brokers = kafkaBase.getJsonArray("brokers");
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < brokers.size(); i++) {
-                    JsonObject broker = brokers.getJsonObject(i);
-                    String br = broker.getString("hostname") + ":" + broker.getJsonNumber("port").toString();
-                    sb.append(br);
-                    if (i < brokers.size() - 1) {
+                for (BrokerConfig broker: root.kafka.brokers) {
+                    if (sb.length() > 0) {
                         sb.append(',');
                     }
+                    sb.append(broker.hostname + ":" + broker.port);
                 }
                 return sb.toString();
             }
 
             if (configKey.startsWith("mp.messaging") && configKey.endsWith(".topic")) {
-                if (kafkaBase==null) {
+                if (root.kafka == null) {
                     throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
                 }
                 // We need to find the replaced topic by first finding
                 // the requested name and then getting the replaced name
                 String requested = existingValues.get(configKey).getValue();
-                JsonArray topics = kafkaBase.getJsonArray("topics");
-                for (int i = 0; i < topics.size(); i++) {
-                    JsonObject aTopic = topics.getJsonObject(i);
-                    if (aTopic.getString("requestedName").equals(requested)) {
-                        String name = aTopic.getString("name");
-                        return name;
+                for (TopicConfig topic : root.kafka.topics) {
+                    if (topic.requestedName.equals(requested)) {
+                        return topic.name;
                     }
                 }
                 return requested;
             }
 
+            if (KAFKA_SASL_KEYS.contains(configKey)) {
+                if (root.kafka == null) {
+                    throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
+                }
+                Optional<BrokerConfig> saslBroker = root.kafka.brokers.stream()
+                        .filter(broker -> "sasl".equals(broker.authtype))
+                        .findAny();
+                if (saslBroker.isPresent()) {
+                    switch (configKey) {
+                        case "kafka.sasl.jaas.config":
+                            String username = saslBroker.get().sasl.username;
+                            String password = saslBroker.get().sasl.password;
+                            return "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
+                        case "kafka.sasl.mechanism":
+                            return KAFKA_SASL_MECHANISM;
+                        case "kafka.security.protocol":
+                            return KAFKA_SASL_SECURITY_PROTOCOL;
+                        case "kafka.ssl.truststore.location":
+                            return saslBroker.get().cacert;
+                    }
+                }
+            }
+
             if (configKey.startsWith("quarkus.datasource")) {
                 String item = configKey.substring("quarkus.datasource.".length());
-                JsonObject dbObject = root.getJsonObject("database");
-                if (dbObject == null) {
+                if (root.database == null) {
                     throw new IllegalStateException("No database section found");
                 }
                 if (item.equals("username")) {
-                    return dbObject.getString("username");
+                    return root.database.username;
                 }
-                String sslMode = dbObject.getString("sslMode");
+                String sslMode = root.database.sslMode;
                 boolean useSsl = !sslMode.equals("disable");
                 boolean verifyFull = sslMode.equals("verify-full");
 
                 if (item.equals("password")) {
-                    return dbObject.getString("password");
+                    return root.database.password;
                 }
                 if (item.equals("jdbc.url")) {
-                    String hostPortDb = getHostPortDb(dbObject);
+                    String hostPortDb = getHostPortDb(root.database);
                     String tracing = "";
                     if (existingValues.containsKey(QUARKUS_DATASOURCE_JDBC_URL)) {
                         String url = existingValues.get(QUARKUS_DATASOURCE_JDBC_URL).getValue();
@@ -176,13 +190,13 @@ public class ClowderConfigSource implements ConfigSource {
                         jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
                     }
                     if (verifyFull) {
-                        jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempCertFile(dbObject);
+                        jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempCertFile(root.database);
                     }
                     return jdbcUrl;
                 }
                 if (item.startsWith("reactive.")) {
                     if (item.equals("reactive.url")) {
-                        return getHostPortDb(dbObject);
+                        return getHostPortDb(root.database);
                     }
                     if (item.equals("reactive.postgresql.ssl-mode")) {
                         return sslMode;
@@ -195,32 +209,30 @@ public class ClowderConfigSource implements ConfigSource {
                             return "true";
                         }
                         if (item.equals("reactive.trust-certificate-pem.certs")) {
-                            return createTempCertFile(dbObject);
+                            return createTempCertFile(root.database);
                         }
                     }
                 }
             }
 
             if (configKey.startsWith(QUARKUS_LOG_CLOUDWATCH)) {
-                JsonObject loggingObject = root.getJsonObject("logging");
-                if (loggingObject == null) {
+                if (root.logging == null) {
                     throw new IllegalStateException("No logging section found");
                 }
-                JsonObject cwObject = loggingObject.getJsonObject("cloudwatch");
-                if (cwObject == null) {
+                if (root.logging.cloudwatch == null) {
                     throw new IllegalStateException("No cloudwatch section found in logging object");
                 }
                 int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
                 String sub = configKey.substring(prefixLen+1);
                 switch (sub) {
                     case "access-key-id":
-                        return cwObject.getString("accessKeyId");
+                        return root.logging.cloudwatch.accessKeyId;
                     case "access-key-secret":
-                        return cwObject.getString("secretAccessKey");
+                        return root.logging.cloudwatch.secretAccessKey;
                     case "region":
-                        return cwObject.getString("region");
+                        return root.logging.cloudwatch.region;
                     case "log-group":
-                        return cwObject.getString("logGroup");
+                        return root.logging.cloudwatch.logGroup;
                     default:
                         // fall through to fetching the value from application.properties
                 }
@@ -228,16 +240,14 @@ public class ClowderConfigSource implements ConfigSource {
 
             if (configKey.startsWith(CLOWDER_ENDPOINTS)) {
                 try {
-                    JsonArray endpoints = root.getJsonArray("endpoints");
-                    if (endpoints == null) {
+                    if (root.endpoints == null) {
                         throw new IllegalStateException("No endpoints section found");
                     }
                     String requestedEndpoint = configKey.substring(CLOWDER_ENDPOINTS.length());
-                    for (int i = 0; i < endpoints.size(); i++) {
-                        JsonObject endpoint = endpoints.getJsonObject(i);
-                        String currentEndpoint = endpoint.getString("app") + "-" + endpoint.getString("name");
+                    for (EndpointConfig endpoint : root.endpoints) {
+                        String currentEndpoint = endpoint.app + "-" + endpoint.name;
                         if (currentEndpoint.equals(requestedEndpoint)) {
-                            return "http://" + endpoint.getString("hostname") + ":" + endpoint.getJsonNumber("port").intValue();
+                            return "http://" + endpoint.hostname + ":" + endpoint.port;
                         }
                     }
                     throw new IllegalStateException("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
@@ -261,20 +271,16 @@ public class ClowderConfigSource implements ConfigSource {
         return CLOWDER_CONFIG_SOURCE;
     }
 
-    private String getHostPortDb(JsonObject dbObject) {
-        String host = dbObject.getString("hostname");
-        int port = dbObject.getJsonNumber("port").intValue();
-        String dbName = dbObject.getString("name");
-
+    private String getHostPortDb(DatabaseConfig database) {
         return String.format("postgresql://%s:%d/%s",
-                host,
-                port,
-                dbName);
+                database.hostname,
+                database.port,
+                database.name);
     }
 
-    private String createTempCertFile(JsonObject dbObject) {
-        if (dbObject.containsKey("rdsCa")) {
-            byte[] cert = dbObject.getString("rdsCa").getBytes(UTF_8);
+    private String createTempCertFile(DatabaseConfig database) {
+        if (database.rdsCa != null) {
+            byte[] cert = database.rdsCa.getBytes(UTF_8);
             try {
                 File certFile = File.createTempFile("rds-ca-root", ".crt");
                 try {

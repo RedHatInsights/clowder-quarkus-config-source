@@ -11,7 +11,6 @@
   <description>Clowder Config Source for Quarkus apps on cloud.redhat.com</description>
   <url>https://github.com/RedHatInsights/clowder-quarkus-config-source</url>
 
-
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
@@ -42,6 +41,11 @@
       <name>Heiko W. Rupp</name>
       <organization>Red Hat</organization>
     </developer>
+    <developer>
+      <id>gwenneg</id>
+      <name>Gwenneg Lepage</name>
+      <organization>Red Hat</organization>
+    </developer>
   </developers>
 
   <dependencyManagement>
@@ -57,13 +61,8 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>jakarta.annotation</groupId>
-      <artifactId>jakarta.annotation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>jakarta.json</artifactId>
-      <version>1.1.6</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
       <groupId>io.smallrye.config</groupId>
