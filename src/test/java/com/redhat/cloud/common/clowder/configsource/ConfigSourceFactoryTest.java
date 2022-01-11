@@ -1,15 +1,13 @@
 package com.redhat.cloud.common.clowder.configsource;
 
-import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/**
- *
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ConfigSourceFactoryTest {
 
     @BeforeAll
@@ -19,22 +17,18 @@ public class ConfigSourceFactoryTest {
 
     @Test
     void testSourceExists() {
-        Config config = ConfigProvider.getConfig();
-
-        for (ConfigSource configSource : config.getConfigSources()) {
+        for (ConfigSource configSource : ConfigProvider.getConfig().getConfigSources()) {
             if (configSource.getName().equals(ClowderConfigSource.CLOWDER_CONFIG_SOURCE)) {
                 return;
             }
         }
-        Assertions.fail("Source not found");
+        fail("Source not found");
     }
 
     // This is to make sure the right source is used
     // Source-specific tests are in ConfigSourceTest
     @Test
     void testHttpPort() {
-        Config config = ConfigProvider.getConfig();
-        Integer port = config.getValue("quarkus.http.port",Integer.class);
-        Assertions.assertEquals(8000, port);
+        assertEquals(8000, ConfigProvider.getConfig().getValue("quarkus.http.port", Integer.class));
     }
 }
