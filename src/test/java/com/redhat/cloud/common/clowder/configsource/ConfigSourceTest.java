@@ -164,7 +164,7 @@ public class ConfigSourceTest {
 
     @Test
     void testUnknownClowderEndpoint() {
-        assertThrows(IllegalStateException.class, () -> ccs.getValue("clowder.endpoints.unknown"));
+        assertNull(ccs.getValue("clowder.endpoints.unknown"));
     }
 
     @Test
