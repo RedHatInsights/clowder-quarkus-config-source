@@ -250,7 +250,8 @@ public class ClowderConfigSource implements ConfigSource {
                             return "http://" + endpoint.hostname + ":" + endpoint.port;
                         }
                     }
-                    throw new IllegalStateException("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
+                    log.warn("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
+                    return null;
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
