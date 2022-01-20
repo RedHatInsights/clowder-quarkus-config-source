@@ -28,7 +28,7 @@
       {
         "hostname": "ephemeral-host.svc",
         "port": 29092,
-        "cacert": "/tmp/dummy/path",
+        "cacert": "Dummy value",
         "authtype": "sasl",
         "sasl": {
           "username": "john",

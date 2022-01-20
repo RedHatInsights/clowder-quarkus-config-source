@@ -156,7 +156,7 @@ public class ClowderConfigSource implements ConfigSource {
                         case "kafka.security.protocol":
                             return KAFKA_SASL_SECURITY_PROTOCOL;
                         case "kafka.ssl.truststore.location":
-                            return saslBroker.get().cacert;
+                            return createTempKafkaCertFile(saslBroker.get().cacert);
                     }
                 }
             }
@@ -190,7 +190,7 @@ public class ClowderConfigSource implements ConfigSource {
                         jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
                     }
                     if (verifyFull) {
-                        jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempCertFile(root.database);
+                        jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempRdsCertFile(root.database.rdsCa);
                     }
                     return jdbcUrl;
                 }
@@ -209,7 +209,7 @@ public class ClowderConfigSource implements ConfigSource {
                             return "true";
                         }
                         if (item.equals("reactive.trust-certificate-pem.certs")) {
-                            return createTempCertFile(root.database);
+                            return createTempRdsCertFile(root.database.rdsCa);
                         }
                     }
                 }
@@ -279,22 +279,34 @@ public class ClowderConfigSource implements ConfigSource {
                 database.name);
     }
 
-    private String createTempCertFile(DatabaseConfig database) {
-        if (database.rdsCa != null) {
-            byte[] cert = database.rdsCa.getBytes(UTF_8);
-            try {
-                File certFile = File.createTempFile("rds-ca-root", ".crt");
-                try {
-                    certFile.deleteOnExit();
-                } catch (SecurityException e) {
-                    log.warn("Delete on exit of the RDS cert file denied by the security manager", e);
-                }
-                return Files.write(Path.of(certFile.getAbsolutePath()), cert).toString();
-            } catch (IOException e) {
-                throw new UncheckedIOException("RDS certificate file creation failed", e);
-            }
+    private String createTempRdsCertFile(String certData) {
+        if (certData != null) {
+            return createTempCertFile("rds-ca-root", certData);
         } else {
             throw new IllegalStateException("'database.sslMode' is set to 'verify-full' in the Clowder config but the 'database.rdsCa' field is missing");
+        }
+    }
+
+    private String createTempKafkaCertFile(String certData) {
+        if (certData != null) {
+            return createTempCertFile("kafka-cacert", certData);
+        } else {
+            return null;
+        }
+    }
+
+    private String createTempCertFile(String fileName, String certData) {
+        byte[] cert = certData.getBytes(UTF_8);
+        try {
+            File certFile = File.createTempFile(fileName, ".crt");
+            try {
+                certFile.deleteOnExit();
+            } catch (SecurityException e) {
+                log.warnf(e, "Delete on exit of the '%s' cert file denied by the security manager", fileName);
+            }
+            return Files.write(Path.of(certFile.getAbsolutePath()), cert).toString();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Certificate file creation failed", e);
         }
     }
 }
