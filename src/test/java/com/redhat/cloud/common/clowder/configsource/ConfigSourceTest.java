@@ -210,12 +210,14 @@ public class ConfigSourceTest {
     }
 
     @Test
-    void testKafkaSaslAuthtype() {
+    void testKafkaSaslAuthtype() throws IOException {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_authtype.json", APP_PROPS_MAP);
         assertEquals("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue("kafka.sasl.jaas.config"));
         assertEquals(KAFKA_SASL_MECHANISM, ccs2.getValue("kafka.sasl.mechanism"));
         assertEquals(KAFKA_SASL_SECURITY_PROTOCOL, ccs2.getValue("kafka.security.protocol"));
-        assertEquals("/tmp/dummy/path", ccs2.getValue("kafka.ssl.truststore.location"));
+        String truststoreLocation = ccs2.getValue("kafka.ssl.truststore.location");
+        String cert = Files.readString(Path.of(truststoreLocation), UTF_8);
+        assertEquals(EXPECTED_CERT, cert);
     }
 
     @Test
