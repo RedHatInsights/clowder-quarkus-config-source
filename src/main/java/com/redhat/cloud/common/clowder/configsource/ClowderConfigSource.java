@@ -24,14 +24,29 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
-    public static final String KAFKA_SASL_MECHANISM = "SCRAM-SHA-512";
-    public static final String KAFKA_SASL_SECURITY_PROTOCOL = "SASL_SSL";
+
+    // Kafka SASL config keys.
+    public static final String KAFKA_SASL_JAAS_CONFIG_KEY = "kafka.sasl.jaas.config";
+    public static final String KAFKA_SASL_MECHANISM_KEY = "kafka.sasl.mechanism";
+    public static final String KAFKA_SECURITY_PROTOCOL_KEY = "kafka.security.protocol";
+    public static final String KAFKA_SSL_TRUSTSTORE_LOCATION_KEY = "kafka.ssl.truststore.location";
+    public static final String KAFKA_SSL_TRUSTSTORE_TYPE_KEY = "kafka.ssl.truststore.type";
+
+    // Kafka SASL config values.
+    public static final String KAFKA_SASL_MECHANISM_VALUE = "SCRAM-SHA-512";
+    public static final String KAFKA_SECURITY_PROTOCOL_VALUE = "SASL_SSL";
+    public static final String KAFKA_SSL_TRUSTSTORE_TYPE_VALUE = "PEM";
 
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
     private static List<String> KAFKA_SASL_KEYS = List.of(
-            "kafka.sasl.jaas.config", "kafka.sasl.mechanism", "kafka.security.protocol", "kafka.ssl.truststore.location");
+            KAFKA_SASL_JAAS_CONFIG_KEY,
+            KAFKA_SASL_MECHANISM_KEY,
+            KAFKA_SECURITY_PROTOCOL_KEY,
+            KAFKA_SSL_TRUSTSTORE_LOCATION_KEY,
+            KAFKA_SSL_TRUSTSTORE_TYPE_KEY
+    );
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
@@ -147,16 +162,20 @@ public class ClowderConfigSource implements ConfigSource {
                         .findAny();
                 if (saslBroker.isPresent()) {
                     switch (configKey) {
-                        case "kafka.sasl.jaas.config":
+                        case KAFKA_SASL_JAAS_CONFIG_KEY:
                             String username = saslBroker.get().sasl.username;
                             String password = saslBroker.get().sasl.password;
                             return "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
-                        case "kafka.sasl.mechanism":
-                            return KAFKA_SASL_MECHANISM;
-                        case "kafka.security.protocol":
-                            return KAFKA_SASL_SECURITY_PROTOCOL;
-                        case "kafka.ssl.truststore.location":
+                        case KAFKA_SASL_MECHANISM_KEY:
+                            return KAFKA_SASL_MECHANISM_VALUE;
+                        case KAFKA_SECURITY_PROTOCOL_KEY:
+                            return KAFKA_SECURITY_PROTOCOL_VALUE;
+                        case KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
                             return createTempKafkaCertFile(saslBroker.get().cacert);
+                        case KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
+                            return KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
+                        default:
+                            throw new IllegalStateException("Unexpected Kafka SASL config key: " + configKey);
                     }
                 }
             }

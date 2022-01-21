@@ -14,8 +14,14 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_SECURITY_PROTOCOL;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_JAAS_CONFIG_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM_VALUE;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SECURITY_PROTOCOL_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SECURITY_PROTOCOL_VALUE;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -203,29 +209,32 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaNoAuthtype() {
-        assertNull(ccs.getValue("kafka.sasl.jaas.config"));
-        assertNull(ccs.getValue("kafka.sasl.mechanism"));
-        assertNull(ccs.getValue("kafka.security.protocol"));
-        assertNull(ccs.getValue("kafka.ssl.truststore.location"));
+        assertNull(ccs.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertNull(ccs.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertNull(ccs.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testKafkaSaslAuthtype() throws IOException {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_authtype.json", APP_PROPS_MAP);
-        assertEquals("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue("kafka.sasl.jaas.config"));
-        assertEquals(KAFKA_SASL_MECHANISM, ccs2.getValue("kafka.sasl.mechanism"));
-        assertEquals(KAFKA_SASL_SECURITY_PROTOCOL, ccs2.getValue("kafka.security.protocol"));
-        String truststoreLocation = ccs2.getValue("kafka.ssl.truststore.location");
+        assertEquals("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertEquals(KAFKA_SASL_MECHANISM_VALUE, ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertEquals(KAFKA_SECURITY_PROTOCOL_VALUE, ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        String truststoreLocation = ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY);
         String cert = Files.readString(Path.of(truststoreLocation), UTF_8);
         assertEquals(EXPECTED_CERT, cert);
+        assertEquals(KAFKA_SSL_TRUSTSTORE_TYPE_VALUE, ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testKafkaMtlsAuthtype() {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_mtls_authtype.json", APP_PROPS_MAP);
-        assertNull(ccs2.getValue("kafka.sasl.jaas.config"));
-        assertNull(ccs2.getValue("kafka.sasl.mechanism"));
-        assertNull(ccs2.getValue("kafka.security.protocol"));
-        assertNull(ccs2.getValue("kafka.ssl.truststore.location"));
+        assertNull(ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertNull(ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertNull(ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 }
