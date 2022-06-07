@@ -48,7 +48,7 @@
       "region": "eu-central-1",
       "secretAccessKey": "very-secret"
     },
-    "type": "null"
+    "type": "cloudwatch"
   },
   "metricsPath": "/metrics",
   "metricsPort": 9000,

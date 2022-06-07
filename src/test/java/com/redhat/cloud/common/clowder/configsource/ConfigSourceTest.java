@@ -145,6 +145,13 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testLogNone() {
+        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP);
+        String value = source.getValue("quarkus.log.cloudwatch.enabled");
+        assertEquals("false", value);
+    }
+
+    @Test
     void testNoKafkaSection() {
         ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", APP_PROPS_MAP);
         assertThrows(IllegalStateException.class, () -> source.getValue("kafka.bootstrap.servers"));

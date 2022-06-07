@@ -241,19 +241,26 @@ public class ClowderConfigSource implements ConfigSource {
                 if (root.logging.cloudwatch == null) {
                     throw new IllegalStateException("No cloudwatch section found in logging object");
                 }
-                int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
-                String sub = configKey.substring(prefixLen+1);
-                switch (sub) {
-                    case "access-key-id":
-                        return root.logging.cloudwatch.accessKeyId;
-                    case "access-key-secret":
-                        return root.logging.cloudwatch.secretAccessKey;
-                    case "region":
-                        return root.logging.cloudwatch.region;
-                    case "log-group":
-                        return root.logging.cloudwatch.logGroup;
-                    default:
-                        // fall through to fetching the value from application.properties
+                if (root.logging.type != null && root.logging.type.equals("cloudwatch")) {
+                    int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
+                    String sub = configKey.substring(prefixLen+1);
+                    switch (sub) {
+                        case "access-key-id":
+                            return root.logging.cloudwatch.accessKeyId;
+                        case "access-key-secret":
+                            return root.logging.cloudwatch.secretAccessKey;
+                        case "region":
+                            return root.logging.cloudwatch.region;
+                        case "log-group":
+                            return root.logging.cloudwatch.logGroup;
+                        default:
+                            // fall through to fetching the value from application.properties
+                    }
+                } else {
+                    // treat other types of logging (like none) as disabled CloudWatch logging
+                    if (configKey.equals(QUARKUS_LOG_CLOUDWATCH + ".enabled")) {
+                        return "false";
+                    }
                 }
             }
 
