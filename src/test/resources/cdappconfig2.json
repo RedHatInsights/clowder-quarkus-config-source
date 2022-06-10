@@ -52,7 +52,7 @@
       "region": "",
       "secretAccessKey": ""
     },
-    "type": "none"
+    "type": "null"
   },
   "metricsPath": "/metrics",
   "metricsPort": 9000,
