@@ -241,7 +241,14 @@ public class ClowderConfigSource implements ConfigSource {
                 if (root.logging.cloudwatch == null) {
                     throw new IllegalStateException("No cloudwatch section found in logging object");
                 }
-                if (root.logging.type != null && root.logging.type.equals("cloudwatch")) {
+
+                // Check for not null type and not "null" provider to enable and read
+                // cloudwatch properties from Clowder config.
+                // Note that the "null" type is a Clowder logging provider that disables
+                // central logging.
+                // Empty string type has to be treated as cloudwatch, as one of the Clowder
+                // logging providers (appinterface) did not set it correctly.
+                if (root.logging.type != null && !root.logging.type.equals("null")) {
                     int prefixLen = QUARKUS_LOG_CLOUDWATCH.length();
                     String sub = configKey.substring(prefixLen+1);
                     switch (sub) {
@@ -257,7 +264,7 @@ public class ClowderConfigSource implements ConfigSource {
                             // fall through to fetching the value from application.properties
                     }
                 } else {
-                    // treat other types of logging (like none) as disabled CloudWatch logging
+                    // treat null logging type as disabled CloudWatch logging
                     if (configKey.equals(QUARKUS_LOG_CLOUDWATCH + ".enabled")) {
                         return "false";
                     }

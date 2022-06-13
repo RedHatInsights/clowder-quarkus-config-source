@@ -145,7 +145,28 @@ public class ConfigSourceTest {
     }
 
     @Test
-    void testLogNone() {
+    void testLogOnEmptyLoggingType() {
+        // Tests for a Clowder buggy case where the type is not set
+        // for appinterface provider, that in fact sets cloudwatch credentials.
+        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig4.json", APP_PROPS_MAP);
+        String value = source.getValue("quarkus.log.cloudwatch.access-key-id");
+        assertEquals("my-key-id", value);
+        value = source.getValue("quarkus.log.cloudwatch.access-key-secret");
+        assertEquals("very-secret", value);
+        value = source.getValue("quarkus.log.cloudwatch.region");
+        assertEquals("eu-central-1", value);
+        value = source.getValue("quarkus.log.cloudwatch.log-group");
+        assertEquals("my-log-group", value);
+        value = source.getValue("quarkus.log.cloudwatch.log-stream-name");
+        assertEquals("my-log-stream", value);
+        value = source.getValue("quarkus.log.cloudwatch.level");
+        assertEquals("INFO", value);
+        value = source.getValue("quarkus.log.cloudwatch.enabled"); // Does not exist.
+        assertNull(value);
+    }
+
+    @Test
+    void testLogNullProvider() {
         ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP);
         String value = source.getValue("quarkus.log.cloudwatch.enabled");
         assertEquals("false", value);
