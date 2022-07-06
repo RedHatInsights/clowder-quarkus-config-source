@@ -16,9 +16,7 @@ import java.util.regex.Pattern;
 
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_JAAS_CONFIG_KEY;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM_VALUE;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SECURITY_PROTOCOL_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SECURITY_PROTOCOL_VALUE;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
@@ -245,11 +243,21 @@ public class ConfigSourceTest {
     }
 
     @Test
-    void testKafkaSaslAuthtype() throws IOException {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_authtype.json", APP_PROPS_MAP);
+    void testKafkaSaslPlainAuthtype() {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_plain_authtype.json", APP_PROPS_MAP);
+        assertEquals("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertEquals("PLAIN", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SASL_SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+    }
+
+    @Test
+    void testKafkaSaslScramAuthtype() throws IOException {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_scram_authtype.json", APP_PROPS_MAP);
         assertEquals("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
-        assertEquals(KAFKA_SASL_MECHANISM_VALUE, ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
-        assertEquals(KAFKA_SECURITY_PROTOCOL_VALUE, ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertEquals("SCRAM-SHA-512", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SASL_SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
         String truststoreLocation = ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY);
         String cert = Files.readString(Path.of(truststoreLocation), UTF_8);
         assertEquals(EXPECTED_CERT, cert);

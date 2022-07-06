@@ -32,7 +32,9 @@
         "authtype": "sasl",
         "sasl": {
           "username": "john",
-          "password": "doe"
+          "password": "doe",
+          "securityProtocol":"SASL_SSL",
+          "saslMechanism":"SCRAM-SHA-512"
         }
       }
     ],
