@@ -33,8 +33,6 @@ public class ClowderConfigSource implements ConfigSource {
     public static final String KAFKA_SSL_TRUSTSTORE_TYPE_KEY = "kafka.ssl.truststore.type";
 
     // Kafka SASL config values.
-    public static final String KAFKA_SASL_MECHANISM_VALUE = "SCRAM-SHA-512";
-    public static final String KAFKA_SECURITY_PROTOCOL_VALUE = "SASL_SSL";
     public static final String KAFKA_SSL_TRUSTSTORE_TYPE_VALUE = "PEM";
 
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
@@ -165,11 +163,16 @@ public class ClowderConfigSource implements ConfigSource {
                         case KAFKA_SASL_JAAS_CONFIG_KEY:
                             String username = saslBroker.get().sasl.username;
                             String password = saslBroker.get().sasl.password;
-                            return "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
+                            switch (saslBroker.get().sasl.saslMechanism) {
+                                case "PLAIN":
+                                    return "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
+                                case "SCRAM-SHA-512":
+                                    return "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
+                            }
                         case KAFKA_SASL_MECHANISM_KEY:
-                            return KAFKA_SASL_MECHANISM_VALUE;
+                            return saslBroker.get().sasl.saslMechanism;
                         case KAFKA_SECURITY_PROTOCOL_KEY:
-                            return KAFKA_SECURITY_PROTOCOL_VALUE;
+                            return saslBroker.get().sasl.securityProtocol;
                         case KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
                             return createTempKafkaCertFile(saslBroker.get().cacert);
                         case KAFKA_SSL_TRUSTSTORE_TYPE_KEY:

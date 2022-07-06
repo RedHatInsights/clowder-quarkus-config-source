@@ -7,4 +7,6 @@ public class SaslConfig {
 
     public String username;
     public String password;
+    public String saslMechanism;
+    public String securityProtocol;
 }
