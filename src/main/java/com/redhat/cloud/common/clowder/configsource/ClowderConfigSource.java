@@ -32,6 +32,14 @@ public class ClowderConfigSource implements ConfigSource {
     public static final String KAFKA_SSL_TRUSTSTORE_LOCATION_KEY = "kafka.ssl.truststore.location";
     public static final String KAFKA_SSL_TRUSTSTORE_TYPE_KEY = "kafka.ssl.truststore.type";
 
+    // Camel Kafka config keys.
+    public static final String CAMEL_KAFKA_BROKERS = "camel.component.kafka.brokers";
+    public static final String CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY = "camel.component.kafka.sasl-jaas-config";
+    public static final String CAMEL_KAFKA_SASL_MECHANISM_KEY = "camel.component.kafka.sasl-mechanism";
+    public static final String CAMEL_KAFKA_SECURITY_PROTOCOL_KEY = "camel.component.kafka.security-protocol";
+    public static final String CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY = "camel.component.kafka.ssl-truststore-location";
+    public static final String CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY = "camel.component.kafka.ssl-truststore-type";
+
     // Kafka SASL config values.
     public static final String KAFKA_SSL_TRUSTSTORE_TYPE_VALUE = "PEM";
 
@@ -43,7 +51,12 @@ public class ClowderConfigSource implements ConfigSource {
             KAFKA_SASL_MECHANISM_KEY,
             KAFKA_SECURITY_PROTOCOL_KEY,
             KAFKA_SSL_TRUSTSTORE_LOCATION_KEY,
-            KAFKA_SSL_TRUSTSTORE_TYPE_KEY
+            KAFKA_SSL_TRUSTSTORE_TYPE_KEY,
+            CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY,
+            CAMEL_KAFKA_SASL_MECHANISM_KEY,
+            CAMEL_KAFKA_SECURITY_PROTOCOL_KEY,
+            CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY,
+            CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY
     );
 
     Logger log = Logger.getLogger(getClass().getName());
@@ -161,6 +174,7 @@ public class ClowderConfigSource implements ConfigSource {
                 if (saslBroker.isPresent()) {
                     switch (configKey) {
                         case KAFKA_SASL_JAAS_CONFIG_KEY:
+                        case CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY:
                             String username = saslBroker.get().sasl.username;
                             String password = saslBroker.get().sasl.password;
                             switch (saslBroker.get().sasl.saslMechanism) {
@@ -170,12 +184,16 @@ public class ClowderConfigSource implements ConfigSource {
                                     return "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";";
                             }
                         case KAFKA_SASL_MECHANISM_KEY:
+                        case CAMEL_KAFKA_SASL_MECHANISM_KEY:
                             return saslBroker.get().sasl.saslMechanism;
                         case KAFKA_SECURITY_PROTOCOL_KEY:
+                        case CAMEL_KAFKA_SECURITY_PROTOCOL_KEY:
                             return saslBroker.get().sasl.securityProtocol;
                         case KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
+                        case CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
                             return createTempKafkaCertFile(saslBroker.get().cacert);
                         case KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
+                        case CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
                             return KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
                         default:
                             throw new IllegalStateException("Unexpected Kafka SASL config key: " + configKey);

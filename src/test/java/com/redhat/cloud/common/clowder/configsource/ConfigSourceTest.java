@@ -20,6 +20,11 @@ import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.K
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
 import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SASL_MECHANISM_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SECURITY_PROTOCOL_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -240,28 +245,50 @@ public class ConfigSourceTest {
         assertNull(ccs.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
         assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertNull(ccs.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testKafkaSaslPlainAuthtype() {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_plain_authtype.json", APP_PROPS_MAP);
-        assertEquals("org.apache.kafka.common.security.plain.PlainLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        String expJasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"john\" password=\"doe\";";
+        assertEquals(expJasConfig, ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertEquals("PLAIN", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
         assertEquals("SASL_SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
         assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertNull(ccs.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertEquals(expJasConfig, ccs2.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertEquals("PLAIN", ccs2.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SASL_SSL", ccs2.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testKafkaSaslScramAuthtype() throws IOException {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_scram_authtype.json", APP_PROPS_MAP);
-        assertEquals("org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";", ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        String expJasConfig = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";";
+        assertEquals(expJasConfig, ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertEquals("SCRAM-SHA-512", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
         assertEquals("SASL_SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
         String truststoreLocation = ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY);
         String cert = Files.readString(Path.of(truststoreLocation), UTF_8);
         assertEquals(EXPECTED_CERT, cert);
         assertEquals(KAFKA_SSL_TRUSTSTORE_TYPE_VALUE, ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertEquals(expJasConfig, ccs2.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertEquals("SCRAM-SHA-512", ccs2.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SASL_SSL", ccs2.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        String camelTruststoreLocation = ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY);
+        String camelCert = Files.readString(Path.of(camelTruststoreLocation), UTF_8);
+        assertEquals(EXPECTED_CERT, camelCert);
+        assertEquals(KAFKA_SSL_TRUSTSTORE_TYPE_VALUE, ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
@@ -272,5 +299,11 @@ public class ConfigSourceTest {
         assertNull(ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
         assertNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertNull(ccs2.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertNull(ccs2.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertNull(ccs2.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNull(ccs.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 }
