@@ -69,15 +69,15 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaBootstrap() {
-        String boostrap = ccs.getValue("kafka.bootstrap.servers");
-        assertEquals("ephemeral-host.svc:29092", boostrap);
+        assertEquals("ephemeral-host.svc:29092", ccs.getValue("kafka.bootstrap.servers"));
+        assertEquals("ephemeral-host.svc:29092", ccs.getValue("camel.component.kafka.brokers"));
     }
 
     @Test
     void testKafkaBootstrapServers() {
         ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP);
-        String boostrap = ccs2.getValue("kafka.bootstrap.servers");
-        assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", boostrap);
+        assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", ccs2.getValue("kafka.bootstrap.servers"));
+        assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", ccs2.getValue("camel.component.kafka.brokers"));
     }
 
     @Test

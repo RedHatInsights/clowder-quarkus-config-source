@@ -25,7 +25,8 @@ public class ClowderConfigSource implements ConfigSource {
 
     public static final String CLOWDER_CONFIG_SOURCE = "ClowderConfigSource";
 
-    // Kafka SASL config keys.
+    // Kafka config keys.
+    public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
     public static final String KAFKA_SASL_JAAS_CONFIG_KEY = "kafka.sasl.jaas.config";
     public static final String KAFKA_SASL_MECHANISM_KEY = "kafka.sasl.mechanism";
     public static final String KAFKA_SECURITY_PROTOCOL_KEY = "kafka.security.protocol";
@@ -135,7 +136,7 @@ public class ClowderConfigSource implements ConfigSource {
             if (configKey.equals("quarkus.http.port")) {
                 return String.valueOf(root.webPort);
             }
-            if (configKey.equals("kafka.bootstrap.servers")) {
+            if (configKey.equals(KAFKA_BOOTSTRAP_SERVERS) || configKey.equals(CAMEL_KAFKA_BROKERS)) {
                 if (root.kafka == null) {
                     throw new IllegalStateException("Kafka base object not present, can't set Kafka values");
                 }
