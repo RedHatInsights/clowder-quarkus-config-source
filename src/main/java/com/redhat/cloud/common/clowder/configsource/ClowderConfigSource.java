@@ -346,7 +346,7 @@ public class ClowderConfigSource implements ConfigSource {
         if (certData != null) {
             return createTempCertFile("kafka-cacert", certData);
         } else {
-            return null;
+            return "";
         }
     }
 
