@@ -343,7 +343,7 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     private String createTempKafkaCertFile(String certData) {
-        if (certData != null) {
+        if (certData != null && !certData.isBlank()) {
             return createTempCertFile("kafka-cacert", certData);
         } else {
             return null;
