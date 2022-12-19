@@ -223,6 +223,8 @@ public class ClowderConfigSource implements ConfigSource {
                     if (existingValues.containsKey(QUARKUS_DATASOURCE_JDBC_URL)) {
                         String url = existingValues.get(QUARKUS_DATASOURCE_JDBC_URL).getValue();
                         if (url.contains(":tracing:")) {
+                            // TODO Remove this block (tracing) later.
+                            log.warn("The support of OpenTracing in this library is deprecated and will be removed soon. Please consider switching to OpenTelemetry.");
                             tracing = "tracing:";
                         } else if (url.contains(":otel:")) {
                             /*
