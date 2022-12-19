@@ -224,6 +224,13 @@ public class ClowderConfigSource implements ConfigSource {
                         String url = existingValues.get(QUARKUS_DATASOURCE_JDBC_URL).getValue();
                         if (url.contains(":tracing:")) {
                             tracing = "tracing:";
+                        } else if (url.contains(":otel:")) {
+                            /*
+                             * The existing JDBC URL is the one coming from the application.properties file.
+                             * If that URL contains "otel" then it means that the app is able to connect to
+                             * the database through the OpenTelemetry JDBC layer.
+                             */
+                            tracing = "otel:";
                         }
                     }
                     String jdbcUrl = String.format("jdbc:%s%s", tracing, hostPortDb);
