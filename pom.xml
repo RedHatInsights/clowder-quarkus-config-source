@@ -12,7 +12,7 @@
   <url>https://github.com/RedHatInsights/clowder-quarkus-config-source</url>
 
   <properties>
-    <compiler-plugin.version>3.10.1</compiler-plugin.version>
+    <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <java.release>11</java.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
