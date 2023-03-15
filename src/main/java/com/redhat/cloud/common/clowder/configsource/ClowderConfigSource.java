@@ -311,7 +311,11 @@ public class ClowderConfigSource implements ConfigSource {
                     for (EndpointConfig endpoint : root.endpoints) {
                         String currentEndpoint = endpoint.app + "-" + endpoint.name;
                         if (currentEndpoint.equals(requestedEndpoint)) {
-                            return "http://" + endpoint.hostname + ":" + endpoint.port;
+                            if (endpoint.tlsPort == null) {
+                                return "http://" + endpoint.hostname + ":" + endpoint.port;
+                            } else {
+                                return "https://" + endpoint.hostname + ":" + endpoint.tlsPort;
+                            }
                         }
                     }
                     log.warn("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
