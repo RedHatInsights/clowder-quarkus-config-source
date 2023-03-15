@@ -9,4 +9,5 @@ public class EndpointConfig {
     public String hostname;
     public String name;
     public Integer port;
+    public Integer tlsPort;
 }
