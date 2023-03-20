@@ -322,16 +322,16 @@ public class ConfigSourceTest {
 
         assertEquals("https://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
 
-        String path = cc.getValue("clowder.endpoints.notifications-api.store-path");
-        String password = cc.getValue("clowder.endpoints.notifications-api.store-password");
-        String type = cc.getValue("clowder.endpoints.notifications-api.store-type");
+        String path = cc.getValue("clowder.endpoints.notifications-api.trust-store-path");
+        String password = cc.getValue("clowder.endpoints.notifications-api.trust-store-password");
+        String type = cc.getValue("clowder.endpoints.notifications-api.trust-store-type");
 
         assertNotNull(path);
         assertNotNull(password);
         assertNotNull(type);
 
         KeyStore keyStore = KeyStore.getInstance(type);
-        keyStore.load(new FileInputStream(new File(path)), password.toCharArray());
+        keyStore.load(new FileInputStream(path), password.toCharArray());
 
         assertEquals(1, Collections.list(keyStore.aliases()).size());
     }
@@ -342,16 +342,16 @@ public class ConfigSourceTest {
 
         assertEquals("https://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
 
-        String path = cc.getValue("clowder.endpoints.notifications-api.store-path");
-        String password = cc.getValue("clowder.endpoints.notifications-api.store-password");
-        String type = cc.getValue("clowder.endpoints.notifications-api.store-type");
+        String path = cc.getValue("clowder.endpoints.notifications-api.trust-store-path");
+        String password = cc.getValue("clowder.endpoints.notifications-api.trust-store-password");
+        String type = cc.getValue("clowder.endpoints.notifications-api.trust-store-type");
 
         assertNotNull(path);
         assertNotNull(password);
         assertNotNull(type);
 
         KeyStore keyStore = KeyStore.getInstance(type);
-        keyStore.load(new FileInputStream(new File(path)), password.toCharArray());
+        keyStore.load(new FileInputStream(path), password.toCharArray());
 
         assertEquals(3, Collections.list(keyStore.aliases()).size());
     }

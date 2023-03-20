@@ -337,8 +337,7 @@ public class ClowderConfigSource implements ConfigSource {
                         requestedEndpoint = configPath[0];
                         param = CLOWDER_ENDPOINTS_PARAM_URL;
                     } else if (configPath.length != 2) {
-                        log.warn("Endpoint '" + requestedEndpointConfig + "' expects a different format: " + FORMAT_EXAMPLE);
-                        return null;
+                        throw new IllegalArgumentException("Endpoint '" + requestedEndpointConfig + "' expects a different format: " + FORMAT_EXAMPLE);
                     } else {
                         requestedEndpoint = configPath[0];
                         param = configPath[1];
@@ -540,7 +539,6 @@ public class ClowderConfigSource implements ConfigSource {
 
     private File createTempFile(String fileName, String suffix) throws IOException {
         File file = File.createTempFile(fileName, suffix);
-        log.info("Creating file:" + file.getAbsolutePath());
         try {
             file.deleteOnExit();
         } catch (SecurityException e) {
