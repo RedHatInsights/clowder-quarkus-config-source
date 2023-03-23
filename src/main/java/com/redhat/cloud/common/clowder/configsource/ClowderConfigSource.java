@@ -475,16 +475,12 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     static List<String> readCerts(String certString) {
-        // Remove all the white space characters
-        certString = certString.replaceAll("\\s", "");
-
-        // Removing white characters within the markers BEGIN CERTIFICATE and END CERTIFICATE
-        Pattern pattern = Pattern.compile("-{5}BEGINCERTIFICATE-{5}([a-zA-Z0-9+\\/=]+)-{5}ENDCERTIFICATE-{5}");
+        Pattern pattern = Pattern.compile("-{5}BEGIN CERTIFICATE-{5}\\R*((?>[a-zA-Z0-9+\\/=]|\\R)+)-{5}END CERTIFICATE-{5}\\R*");
         List<String> results = new ArrayList<>();
         Matcher matcher = pattern.matcher(certString);
         while (matcher.find()) {
             results.add(
-                    matcher.group(1)
+                    matcher.group(1).replaceAll("\\R", "")
             );
         }
         return results;
