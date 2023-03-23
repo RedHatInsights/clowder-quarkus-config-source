@@ -488,7 +488,7 @@ public class ClowderConfigSource implements ConfigSource {
     private List<byte[]> parsePemCert(List<String> base64Certs) {
         return base64Certs
                 .stream()
-                .map(cert -> Base64.getDecoder().decode(cert))
+                .map(cert -> Base64.getDecoder().decode(cert.getBytes(StandardCharsets.UTF_8)))
                 .collect(Collectors.toList());
     }
 
