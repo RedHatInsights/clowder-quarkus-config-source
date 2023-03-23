@@ -475,7 +475,7 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     static List<String> readCerts(String certString) {
-        Pattern pattern = Pattern.compile("-{5}BEGIN CERTIFICATE-{5}\\R*((?>[a-zA-Z0-9+\\/=]|\\R)+)-{5}END CERTIFICATE-{5}\\R*");
+        Pattern pattern = Pattern.compile("\\R*-{5}BEGIN CERTIFICATE-{5}((?>[a-zA-Z0-9+\\/=]|\\R)+)-{5}END CERTIFICATE-{5}");
         List<String> results = new ArrayList<>();
         Matcher matcher = pattern.matcher(certString);
         while (matcher.find()) {
