@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -18,13 +19,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -75,14 +78,16 @@ public class ClowderConfigSource implements ConfigSource {
             CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY,
             CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY
     );
+    // Fixed length for the password used - it could probably be anything else - but ran my tests on a FIPS environment with these.
+    private static final int DEFAULT_PASSWORD_LENGTH = 33;
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
     private ClowderConfig root;
     private boolean translate = true;
 
-    private String clowderEndpointPath;
-    private String clowderEndpointPassword;
+    private String trustStorePath;
+    private String trustStorePassword;
 
     /**
      * <p>Constructor for ClowderConfigSource.</p>
@@ -371,7 +376,7 @@ public class ClowderConfigSource implements ConfigSource {
                                 }
 
                                 createTruststoreFile(root.tlsCAPath);
-                                return clowderEndpointPath;
+                                return trustStorePath;
                             }
 
                             return null;
@@ -382,7 +387,7 @@ public class ClowderConfigSource implements ConfigSource {
                                 }
 
                                 createTruststoreFile(root.tlsCAPath);
-                                return clowderEndpointPassword;
+                                return trustStorePassword;
                             }
 
                             return null;
@@ -428,12 +433,12 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     private void createTruststoreFile(String certPath) {
-        if (this.clowderEndpointPath != null) {
+        if (this.trustStorePath != null) {
             return;
         }
 
         try {
-            String certContent = Files.readString(new File(certPath).toPath());
+            String certContent = Files.readString(new File(certPath).toPath(), UTF_8);
             List<String> base64Certs = readCerts(certContent);
 
             List<X509Certificate> certificates = parsePemCert(base64Certs)
@@ -445,7 +450,12 @@ public class ClowderConfigSource implements ConfigSource {
                 throw new IllegalStateException("Could not parse any certificate in the file");
             }
 
-            KeyStore truststore = KeyStore.getInstance("PKCS12");
+            // Generate a keystore by hand
+            // https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/KeyStore.html
+
+            KeyStore truststore = KeyStore.getInstance(CLOWDER_ENDPOINT_STORE_TYPE);
+
+            // Per the docs, we need to init the new keystore with load(null)
             truststore.load(null);
 
             for (int i = 0; i < certificates.size(); i++) {
@@ -453,8 +463,8 @@ public class ClowderConfigSource implements ConfigSource {
             }
 
             char[] password = buildPassword(base64Certs.get(0));
-            this.clowderEndpointPath = writeKeystore(truststore, password);
-            this.clowderEndpointPassword = new String(password);
+            this.trustStorePath = writeTruststore(truststore, password);
+            this.trustStorePassword = new String(password);
         } catch (IOException ioe) {
             throw new IllegalStateException("Couldn't load the certificate, but we were requested a truststore", ioe);
         } catch (KeyStoreException kse) {
@@ -465,18 +475,15 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     static List<String> readCerts(String certString) {
-        return Arrays.stream(certString.split("-----BEGIN CERTIFICATE-----"))
-                .filter(s -> !s.isEmpty())
-                .map(s -> Arrays.stream(s
-                                .split("-----END CERTIFICATE-----"))
-                        .filter(s2 -> !s2.isEmpty())
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalStateException("Invalid certificate found"))
-
-                )
-                .map(String::trim)
-                .map(s -> s.replaceAll("\n", ""))
-                .collect(Collectors.toList());
+        Pattern pattern = Pattern.compile("-{5}BEGIN CERTIFICATE-{5}\\R+((?>[a-zA-Z0-9+\\/=]+\\R)+)-{5}END CERTIFICATE-{5}\\R+");
+        List<String> results = new ArrayList<>();
+        Matcher matcher = pattern.matcher(certString);
+        while (matcher.find()) {
+            results.add(
+                    matcher.group(1).replaceAll("\\R", "")
+            );
+        }
+        return results;
     }
     private List<byte[]> parsePemCert(List<String> base64Certs) {
         return base64Certs
@@ -494,7 +501,7 @@ public class ClowderConfigSource implements ConfigSource {
         }
     }
 
-    private String writeKeystore(KeyStore keyStore, char[] password) {
+    private String writeTruststore(KeyStore keyStore, char[] password) {
         try {
             File file = createTempFile("truststore", ".trust");
             keyStore.store(new FileOutputStream(file), password);
@@ -505,7 +512,8 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     private char[] buildPassword(String seed) {
-        int size = Math.min(33, seed.length());
+        // To avoid having a fixed password - fetch the first characters from a string (the certificate)
+        int size = Math.min(DEFAULT_PASSWORD_LENGTH, seed.length());
         char[] password = new char[size];
         seed.getChars(0, size, password, 0);
         return password;
