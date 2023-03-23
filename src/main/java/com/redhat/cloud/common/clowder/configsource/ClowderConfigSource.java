@@ -20,6 +20,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -475,16 +476,20 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     static List<String> readCerts(String certString) {
-        Pattern pattern = Pattern.compile("\\R*-{5}BEGIN CERTIFICATE-{5}((?>[a-zA-Z0-9+\\/=]|\\R)+)-{5}END CERTIFICATE-{5}");
-        List<String> results = new ArrayList<>();
-        Matcher matcher = pattern.matcher(certString);
-        while (matcher.find()) {
-            results.add(
-                    matcher.group(1).replaceAll("\\R", "")
-            );
-        }
-        return results;
+        return Arrays.stream(certString.split("-----BEGIN CERTIFICATE-----"))
+                .filter(s -> !s.isEmpty())
+                .map(s -> Arrays.stream(s
+                                .split("-----END CERTIFICATE-----"))
+                        .filter(s2 -> !s2.isEmpty())
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Invalid certificate found"))
+
+                )
+                .map(String::trim)
+                .map(s -> s.replaceAll("\n", ""))
+                .collect(Collectors.toList());
     }
+
     private List<byte[]> parsePemCert(List<String> base64Certs) {
         return base64Certs
                 .stream()
