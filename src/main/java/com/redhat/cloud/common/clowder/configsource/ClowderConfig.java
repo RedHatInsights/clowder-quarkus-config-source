@@ -16,4 +16,5 @@ public class ClowderConfig {
     public Integer privatePort;
     public Integer publicPort;
     public Integer webPort;
+    public String tlsCAPath;
 }

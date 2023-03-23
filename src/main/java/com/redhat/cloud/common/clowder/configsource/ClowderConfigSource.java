@@ -5,16 +5,31 @@ import io.smallrye.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.logging.Logger;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -47,6 +62,11 @@ public class ClowderConfigSource implements ConfigSource {
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
+    private static final String CLOWDER_ENDPOINTS_PARAM_URL = "url";
+    private static final String CLOWDER_ENDPOINT_STORE_TYPE = "PKCS12";
+    private static final String CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH = "trust-store-path";
+    private static final String CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD = "trust-store-password";
+    private static final String CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE = "trust-store-type";
     private static List<String> KAFKA_SASL_KEYS = List.of(
             KAFKA_SASL_JAAS_CONFIG_KEY,
             KAFKA_SASL_MECHANISM_KEY,
@@ -59,11 +79,16 @@ public class ClowderConfigSource implements ConfigSource {
             CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY,
             CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY
     );
+    // Fixed length for the password used - it could probably be anything else - but ran my tests on a FIPS environment with these.
+    private static final int DEFAULT_PASSWORD_LENGTH = 33;
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
     private ClowderConfig root;
     private boolean translate = true;
+
+    private String trustStorePath;
+    private String trustStorePassword;
 
     /**
      * <p>Constructor for ClowderConfigSource.</p>
@@ -307,15 +332,80 @@ public class ClowderConfigSource implements ConfigSource {
                     if (root.endpoints == null) {
                         throw new IllegalStateException("No endpoints section found");
                     }
-                    String requestedEndpoint = configKey.substring(CLOWDER_ENDPOINTS.length());
-                    for (EndpointConfig endpoint : root.endpoints) {
-                        String currentEndpoint = endpoint.app + "-" + endpoint.name;
+                    String requestedEndpointConfig = configKey.substring(CLOWDER_ENDPOINTS.length());
+                    String[] configPath = requestedEndpointConfig.split("\\.");
+
+                    String requestedEndpoint;
+                    String param;
+                    final String FORMAT_EXAMPLE = "[endpoint-name].[url|trust-store-path|trust-store-password|trust-store-type]";
+                    if (configPath.length == 1) {
+                        log.warn("Endpoint '" + requestedEndpointConfig + "' is using the old format. Please move to the new one: " + FORMAT_EXAMPLE);
+                        requestedEndpoint = configPath[0];
+                        param = CLOWDER_ENDPOINTS_PARAM_URL;
+                    } else if (configPath.length != 2) {
+                        throw new IllegalArgumentException("Endpoint '" + requestedEndpointConfig + "' expects a different format: " + FORMAT_EXAMPLE);
+                    } else {
+                        requestedEndpoint = configPath[0];
+                        param = configPath[1];
+                    }
+
+                    EndpointConfig endpoint = null;
+
+                    for (EndpointConfig endpointCandidate : root.endpoints) {
+                        String currentEndpoint = endpointCandidate.app + "-" + endpointCandidate.name;
                         if (currentEndpoint.equals(requestedEndpoint)) {
-                            return "http://" + endpoint.hostname + ":" + endpoint.port;
+                            endpoint = endpointCandidate;
                         }
                     }
-                    log.warn("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
-                    return null;
+
+                    if (endpoint == null) {
+                        log.warn("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
+                        return null;
+                    }
+
+                    switch (param) {
+                        case CLOWDER_ENDPOINTS_PARAM_URL:
+                            if (endpoint.tlsPort == null) {
+                                return "http://" + endpoint.hostname + ":" + endpoint.port;
+                            } else {
+                                return "https://" + endpoint.hostname + ":" + endpoint.tlsPort;
+                            }
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
+                            if (endpoint.tlsPort != null) {
+                                if (root.tlsCAPath == null) {
+                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
+                                }
+
+                                createTruststoreFile(root.tlsCAPath);
+                                return trustStorePath;
+                            }
+
+                            return null;
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
+                            if (endpoint.tlsPort != null) {
+                                if (root.tlsCAPath == null) {
+                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
+                                }
+
+                                createTruststoreFile(root.tlsCAPath);
+                                return trustStorePassword;
+                            }
+
+                            return null;
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
+                            if (endpoint.tlsPort != null) {
+                                if (root.tlsCAPath == null) {
+                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
+                                }
+
+                                return CLOWDER_ENDPOINT_STORE_TYPE;
+                            }
+
+                            return null;
+                        default:
+                            log.warn("Endpoint '" + requestedEndpoint + "' requested an unknown param: '" + param + "'");
+                            return null;
+                    }
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
@@ -343,6 +433,97 @@ public class ClowderConfigSource implements ConfigSource {
                 database.name);
     }
 
+    private void createTruststoreFile(String certPath) {
+        if (this.trustStorePath != null) {
+            return;
+        }
+
+        try {
+            String certContent = Files.readString(new File(certPath).toPath(), UTF_8);
+            List<String> base64Certs = readCerts(certContent);
+
+            List<X509Certificate> certificates = parsePemCert(base64Certs)
+                    .stream()
+                    .map(this::buildX509Cert)
+                    .collect(Collectors.toList());
+
+            if (certificates.size() < 1) {
+                throw new IllegalStateException("Could not parse any certificate in the file");
+            }
+
+            // Generate a keystore by hand
+            // https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/KeyStore.html
+
+            KeyStore truststore = KeyStore.getInstance(CLOWDER_ENDPOINT_STORE_TYPE);
+
+            // Per the docs, we need to init the new keystore with load(null)
+            truststore.load(null);
+
+            for (int i = 0; i < certificates.size(); i++) {
+                truststore.setCertificateEntry("cert-" + i, certificates.get(i));
+            }
+
+            char[] password = buildPassword(base64Certs.get(0));
+            this.trustStorePath = writeTruststore(truststore, password);
+            this.trustStorePassword = new String(password);
+        } catch (IOException ioe) {
+            throw new IllegalStateException("Couldn't load the certificate, but we were requested a truststore", ioe);
+        } catch (KeyStoreException kse) {
+            throw new IllegalStateException("Couldn't load the keystore format PKCS12", kse);
+        } catch (NoSuchAlgorithmException | CertificateException ce) {
+            throw new IllegalStateException("Couldn't configure the keystore", ce);
+        }
+    }
+
+    static List<String> readCerts(String certString) {
+        return Arrays.stream(certString.split("-----BEGIN CERTIFICATE-----"))
+                .filter(s -> !s.isEmpty())
+                .map(s -> Arrays.stream(s
+                                .split("-----END CERTIFICATE-----"))
+                        .filter(s2 -> !s2.isEmpty())
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Invalid certificate found"))
+
+                )
+                .map(String::trim)
+                .map(s -> s.replaceAll("\n", ""))
+                .collect(Collectors.toList());
+    }
+
+    private List<byte[]> parsePemCert(List<String> base64Certs) {
+        return base64Certs
+                .stream()
+                .map(cert -> Base64.getDecoder().decode(cert.getBytes(StandardCharsets.UTF_8)))
+                .collect(Collectors.toList());
+    }
+
+    private X509Certificate buildX509Cert(byte[] cert) {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(cert));
+        } catch (CertificateException certificateException) {
+            throw new IllegalStateException("Couldn't load the x509 certificate factory", certificateException);
+        }
+    }
+
+    private String writeTruststore(KeyStore keyStore, char[] password) {
+        try {
+            File file = createTempFile("truststore", ".trust");
+            keyStore.store(new FileOutputStream(file), password);
+            return file.getAbsolutePath();
+        } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
+            throw new RuntimeException("Truststore creation failed", e);
+        }
+    }
+
+    private char[] buildPassword(String seed) {
+        // To avoid having a fixed password - fetch the first characters from a string (the certificate)
+        int size = Math.min(DEFAULT_PASSWORD_LENGTH, seed.length());
+        char[] password = new char[size];
+        seed.getChars(0, size, password, 0);
+        return password;
+    }
+
     private String createTempRdsCertFile(String certData) {
         if (certData != null) {
             return createTempCertFile("rds-ca-root", certData);
@@ -362,15 +543,20 @@ public class ClowderConfigSource implements ConfigSource {
     private String createTempCertFile(String fileName, String certData) {
         byte[] cert = certData.getBytes(UTF_8);
         try {
-            File certFile = File.createTempFile(fileName, ".crt");
-            try {
-                certFile.deleteOnExit();
-            } catch (SecurityException e) {
-                log.warnf(e, "Delete on exit of the '%s' cert file denied by the security manager", fileName);
-            }
+            File certFile = createTempFile(fileName, ".crt");
             return Files.write(Path.of(certFile.getAbsolutePath()), cert).toString();
         } catch (IOException e) {
             throw new UncheckedIOException("Certificate file creation failed", e);
         }
+    }
+
+    private File createTempFile(String fileName, String suffix) throws IOException {
+        File file = File.createTempFile(fileName, suffix);
+        try {
+            file.deleteOnExit();
+        } catch (SecurityException e) {
+            log.warnf(e, "Delete on exit of the '%s' cert file denied by the security manager", fileName);
+        }
+        return file;
     }
 }
