@@ -443,7 +443,7 @@ public class ClowderConfigSource implements ConfigSource {
 
             List<X509Certificate> certificates = parsePemCert(base64Certs)
                     .stream()
-                    .map(this::buildx509Cert)
+                    .map(this::buildX509Cert)
                     .collect(Collectors.toList());
 
             if (certificates.size() < 1) {
@@ -475,12 +475,16 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     static List<String> readCerts(String certString) {
-        Pattern pattern = Pattern.compile("-{5}BEGIN CERTIFICATE-{5}\\R+((?>[a-zA-Z0-9+\\/=]+\\R)+)-{5}END CERTIFICATE-{5}\\R+");
+        // Remove all the white space characters
+        certString = certString.replaceAll("\\s", "");
+
+        // Removing white characters within the markers BEGIN CERTIFICATE and END CERTIFICATE
+        Pattern pattern = Pattern.compile("-{5}BEGINCERTIFICATE-{5}([a-zA-Z0-9+\\/=]+)-{5}ENDCERTIFICATE-{5}");
         List<String> results = new ArrayList<>();
         Matcher matcher = pattern.matcher(certString);
         while (matcher.find()) {
             results.add(
-                    matcher.group(1).replaceAll("\\R", "")
+                    matcher.group(1)
             );
         }
         return results;
@@ -492,7 +496,7 @@ public class ClowderConfigSource implements ConfigSource {
                 .collect(Collectors.toList());
     }
 
-    private X509Certificate buildx509Cert(byte[] cert) {
+    private X509Certificate buildX509Cert(byte[] cert) {
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(cert));
