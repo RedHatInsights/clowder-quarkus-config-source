@@ -357,6 +357,16 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testWhenTlsPortIsOff() {
+        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_tls_is_off.json", APP_PROPS_MAP);
+
+        assertEquals("http://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
+        assertNull(cc.getValue("clowder.endpoints.notifications-api.trust-store-path"));
+        assertNull(cc.getValue("clowder.endpoints.notifications-api.trust-store-password"));
+        assertNull(cc.getValue("clowder.endpoints.notifications-api.trust-store-type"));
+    }
+
+    @Test
     void singleCertificateParse() throws IOException {
         String certContent = Files.readString(new File("target/test-classes/cert01.pem").toPath());
         List<String> certs = ClowderConfigSource.readCerts(certContent);

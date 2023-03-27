@@ -19,7 +19,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
@@ -27,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -81,6 +78,7 @@ public class ClowderConfigSource implements ConfigSource {
     );
     // Fixed length for the password used - it could probably be anything else - but ran my tests on a FIPS environment with these.
     private static final int DEFAULT_PASSWORD_LENGTH = 33;
+    private static final Integer PORT_NOT_SET = 0;
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
@@ -355,6 +353,7 @@ public class ClowderConfigSource implements ConfigSource {
                         String currentEndpoint = endpointCandidate.app + "-" + endpointCandidate.name;
                         if (currentEndpoint.equals(requestedEndpoint)) {
                             endpoint = endpointCandidate;
+                            break;
                         }
                     }
 
@@ -365,16 +364,14 @@ public class ClowderConfigSource implements ConfigSource {
 
                     switch (param) {
                         case CLOWDER_ENDPOINTS_PARAM_URL:
-                            if (endpoint.tlsPort == null) {
-                                return "http://" + endpoint.hostname + ":" + endpoint.port;
-                            } else {
+                            if (usesTls(endpoint)) {
                                 return "https://" + endpoint.hostname + ":" + endpoint.tlsPort;
+                            } else {
+                                return "http://" + endpoint.hostname + ":" + endpoint.port;
                             }
                         case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
-                            if (endpoint.tlsPort != null) {
-                                if (root.tlsCAPath == null) {
-                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
-                                }
+                            if (usesTls(endpoint)) {
+                                ensureTlsCertPathIsPresent();
 
                                 createTruststoreFile(root.tlsCAPath);
                                 return trustStorePath;
@@ -382,10 +379,8 @@ public class ClowderConfigSource implements ConfigSource {
 
                             return null;
                         case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
-                            if (endpoint.tlsPort != null) {
-                                if (root.tlsCAPath == null) {
-                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
-                                }
+                            if (usesTls(endpoint)) {
+                                ensureTlsCertPathIsPresent();
 
                                 createTruststoreFile(root.tlsCAPath);
                                 return trustStorePassword;
@@ -393,10 +388,8 @@ public class ClowderConfigSource implements ConfigSource {
 
                             return null;
                         case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
-                            if (endpoint.tlsPort != null) {
-                                if (root.tlsCAPath == null) {
-                                    throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
-                                }
+                            if (usesTls(endpoint)) {
+                                ensureTlsCertPathIsPresent();
 
                                 return CLOWDER_ENDPOINT_STORE_TYPE;
                             }
@@ -431,6 +424,16 @@ public class ClowderConfigSource implements ConfigSource {
                 database.hostname,
                 database.port,
                 database.name);
+    }
+
+    private boolean usesTls(EndpointConfig endpointConfig) {
+        return endpointConfig.tlsPort != null && !endpointConfig.tlsPort.equals(PORT_NOT_SET);
+    }
+
+    private void ensureTlsCertPathIsPresent() {
+        if (root.tlsCAPath == null || root.tlsCAPath.isBlank()) {
+            throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
+        }
     }
 
     private void createTruststoreFile(String certPath) {
