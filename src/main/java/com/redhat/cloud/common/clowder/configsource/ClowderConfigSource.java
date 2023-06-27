@@ -331,75 +331,8 @@ public class ClowderConfigSource implements ConfigSource {
                     if (root.endpoints == null) {
                         throw new IllegalStateException("No endpoints section found");
                     }
-                    String requestedEndpointConfig = configKey.substring(CLOWDER_ENDPOINTS.length());
-                    String[] configPath = requestedEndpointConfig.split("\\.");
 
-                    String requestedEndpoint;
-                    String param;
-                    final String FORMAT_EXAMPLE = "[endpoint-name].[url|trust-store-path|trust-store-password|trust-store-type]";
-                    if (configPath.length == 1) {
-                        log.warn("Endpoint '" + requestedEndpointConfig + "' is using the old format. Please move to the new one: " + FORMAT_EXAMPLE);
-                        requestedEndpoint = configPath[0];
-                        param = CLOWDER_ENDPOINTS_PARAM_URL;
-                    } else if (configPath.length != 2) {
-                        throw new IllegalArgumentException("Endpoint '" + requestedEndpointConfig + "' expects a different format: " + FORMAT_EXAMPLE);
-                    } else {
-                        requestedEndpoint = configPath[0];
-                        param = configPath[1];
-                    }
-
-                    EndpointConfig endpoint = null;
-
-                    for (EndpointConfig endpointCandidate : root.endpoints) {
-                        String currentEndpoint = endpointCandidate.app + "-" + endpointCandidate.name;
-                        if (currentEndpoint.equals(requestedEndpoint)) {
-                            endpoint = endpointCandidate;
-                            break;
-                        }
-                    }
-
-                    if (endpoint == null) {
-                        log.warn("Endpoint '" + requestedEndpoint + "' not found in the endpoints section");
-                        return null;
-                    }
-
-                    switch (param) {
-                        case CLOWDER_ENDPOINTS_PARAM_URL:
-                            if (usesTls(endpoint)) {
-                                return "https://" + endpoint.hostname + ":" + endpoint.tlsPort;
-                            } else {
-                                return "http://" + endpoint.hostname + ":" + endpoint.port;
-                            }
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
-                            if (usesTls(endpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                createTruststoreFile(root.tlsCAPath);
-                                return trustStorePath;
-                            }
-
-                            return null;
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
-                            if (usesTls(endpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                createTruststoreFile(root.tlsCAPath);
-                                return trustStorePassword;
-                            }
-
-                            return null;
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
-                            if (usesTls(endpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                return CLOWDER_ENDPOINT_STORE_TYPE;
-                            }
-
-                            return null;
-                        default:
-                            log.warn("Endpoint '" + requestedEndpoint + "' requested an unknown param: '" + param + "'");
-                            return null;
-                    }
+                    return this.processEndpoints(this.root.endpoints, configKey, CLOWDER_ENDPOINTS, "Endpoint");
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
@@ -411,75 +344,8 @@ public class ClowderConfigSource implements ConfigSource {
                     if (root.privateEndpoints == null) {
                         throw new IllegalStateException("No private endpoints section found");
                     }
-                    final String requestedEndpointConfig = configKey.substring(CLOWDER_PRIVATE_ENDPOINTS.length());
-                    final String[] configPath = requestedEndpointConfig.split("\\.");
 
-                    final String requestedPrivateEndpoint;
-                    final String param;
-                    final String FORMAT_EXAMPLE = "[private-endpoint-name].[url|trust-store-path|trust-store-password|trust-store-type]";
-                    if (configPath.length == 1) {
-                        log.warnf("Private endpoint '%s' is using the old format. Please move to the new one: %s", requestedEndpointConfig, FORMAT_EXAMPLE);
-                        requestedPrivateEndpoint = configPath[0];
-                        param = CLOWDER_ENDPOINTS_PARAM_URL;
-                    } else if (configPath.length != 2) {
-                        throw new IllegalArgumentException(String.format("Private endpoint '%s' expects a different format: %s" +requestedEndpointConfig, FORMAT_EXAMPLE));
-                    } else {
-                        requestedPrivateEndpoint = configPath[0];
-                        param = configPath[1];
-                    }
-
-                    PrivateEndpointConfig privateEndpoint = null;
-
-                    for (final PrivateEndpointConfig privateEndpointCandidate : root.privateEndpoints) {
-                        final String currentEndpoint = String.format("%s-%s", privateEndpointCandidate.app, privateEndpointCandidate.name);
-                        if (currentEndpoint.equals(requestedPrivateEndpoint)) {
-                            privateEndpoint = privateEndpointCandidate;
-                            break;
-                        }
-                    }
-
-                    if (privateEndpoint == null) {
-                        log.warnf("Private endpoint '%s' not found in the private endpoints section", requestedPrivateEndpoint);
-                        return null;
-                    }
-
-                    switch (param) {
-                        case CLOWDER_ENDPOINTS_PARAM_URL:
-                            if (usesTls(privateEndpoint)) {
-                                return String.format("https://%s:%s", privateEndpoint.hostname, privateEndpoint.tlsPort);
-                            } else {
-                                return String.format("http://%s:%s", privateEndpoint.hostname, privateEndpoint.port);
-                            }
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
-                            if (usesTls(privateEndpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                createTruststoreFile(root.tlsCAPath);
-                                return trustStorePath;
-                            }
-
-                            return null;
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
-                            if (usesTls(privateEndpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                createTruststoreFile(root.tlsCAPath);
-                                return trustStorePassword;
-                            }
-
-                            return null;
-                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
-                            if (usesTls(privateEndpoint)) {
-                                ensureTlsCertPathIsPresent();
-
-                                return CLOWDER_ENDPOINT_STORE_TYPE;
-                            }
-
-                            return null;
-                        default:
-                            log.warnf("Private endpoint '%s' requested an unknown param: '%s'", requestedPrivateEndpoint, param);
-                            return null;
-                    }
+                    return this.processEndpoints(this.root.privateEndpoints, configKey, CLOWDER_PRIVATE_ENDPOINTS, "Private endpoint");
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
@@ -492,6 +358,96 @@ public class ClowderConfigSource implements ConfigSource {
         }
         else {
             return null;
+        }
+    }
+
+    /**
+     * Attempts to find the corresponding value for the provided configuration
+     * key. If the URL parameter has been requested, then depending on whether
+     * the endpoint has a TLS port or not, a full URL including the protocol
+     * is returned. For the rest of parameters it returns the corresponding
+     * value.
+     * @param endpointConfigs the list of configurations to be looked for the
+     *                        corresponding value.
+     * @param configKey       the configuration key specified in the
+     *                        "application.properties" file.
+     * @param clowderKey      the Clowder key which represents the path to
+     *                        either the regular endpoints or the private
+     *                        endpoints.
+     * @param endpointType    the type of the endpoint which the function will
+     *                        process. Used mainly for error and log messages.
+     * @return a full URL including the protocol in the case of requesting an
+     * endpoint's URL parameter. Regular values for the rest of the parameters.
+     */
+    private String processEndpoints(final List<? extends EndpointConfig> endpointConfigs, final String configKey, final String clowderKey, final String endpointType) {
+        final String requestedEndpointConfig = configKey.substring(clowderKey.length());
+        final String[] configPath = requestedEndpointConfig.split("\\.");
+
+        final String requestedEndpoint;
+        final String param;
+        final String FORMAT_EXAMPLE = String.format("[%s].[url|trust-store-path|trust-store-password|trust-store-type]", endpointType);
+        if (configPath.length == 1) {
+            log.warnf("%s '%s' is using the old format. Please move to the new one: %s", endpointType, requestedEndpointConfig, FORMAT_EXAMPLE);
+            requestedEndpoint = configPath[0];
+            param = CLOWDER_ENDPOINTS_PARAM_URL;
+        } else if (configPath.length != 2) {
+            throw new IllegalArgumentException(String.format("%s '%s' expects a different format: %s", endpointType, requestedEndpointConfig, FORMAT_EXAMPLE));
+        } else {
+            requestedEndpoint = configPath[0];
+            param = configPath[1];
+        }
+
+        EndpointConfig endpointConfig = null;
+
+        for (final EndpointConfig configCandidate : endpointConfigs) {
+            final String currentEndpoint = String.format("%s-%s", configCandidate.app, configCandidate.name);
+            if (currentEndpoint.equals(requestedEndpoint)) {
+                endpointConfig = configCandidate;
+                break;
+            }
+        }
+
+        if (endpointConfig == null) {
+            log.warnf("%s '%s' not found in the %1s section", endpointType, requestedEndpoint);
+            return null;
+        }
+
+        switch (param) {
+            case CLOWDER_ENDPOINTS_PARAM_URL:
+                if (usesTls(endpointConfig)) {
+                    return String.format("https://%s:%s", endpointConfig.hostname, endpointConfig.tlsPort);
+                } else {
+                    return String.format("http://%s:%s", endpointConfig.hostname, endpointConfig.port);
+                }
+            case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
+                if (usesTls(endpointConfig)) {
+                    ensureTlsCertPathIsPresent();
+
+                    createTruststoreFile(this.root.tlsCAPath);
+                    return this.trustStorePath;
+                }
+
+                return null;
+            case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
+                if (usesTls(endpointConfig)) {
+                    ensureTlsCertPathIsPresent();
+
+                    createTruststoreFile(this.root.tlsCAPath);
+                    return this.trustStorePassword;
+                }
+
+                return null;
+            case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
+                if (usesTls(endpointConfig)) {
+                    ensureTlsCertPathIsPresent();
+
+                    return CLOWDER_ENDPOINT_STORE_TYPE;
+                }
+
+                return null;
+            default:
+                log.warnf("%s '%s' requested an unknown param: '%s'", endpointType, requestedEndpoint, param);
+                return null;
         }
     }
 
@@ -509,10 +465,6 @@ public class ClowderConfigSource implements ConfigSource {
 
     private boolean usesTls(EndpointConfig endpointConfig) {
         return endpointConfig.tlsPort != null && !endpointConfig.tlsPort.equals(PORT_NOT_SET);
-    }
-
-    private boolean usesTls(final PrivateEndpointConfig privateEndpointConfig) {
-        return privateEndpointConfig.tlsPort != null && !privateEndpointConfig.tlsPort.equals(PORT_NOT_SET);
     }
 
     private void ensureTlsCertPathIsPresent() {
