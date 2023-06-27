@@ -59,7 +59,7 @@ public class ClowderConfigSource implements ConfigSource {
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
-    private static final String CLOWDER_PRIVATE_ENDPOINTS = "clowder.private.endpoints.";
+    private static final String CLOWDER_PRIVATE_ENDPOINTS = "clowder.private-endpoints.";
     private static final String CLOWDER_ENDPOINTS_PARAM_URL = "url";
     private static final String CLOWDER_ENDPOINT_STORE_TYPE = "PKCS12";
     private static final String CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH = "trust-store-path";
