@@ -1,0 +1,24 @@
+{
+  "endpoints": [
+    {
+      "app": "notifications",
+      "hostname": "notifications-api.svc",
+      "name": "api",
+      "port": 9876
+    },
+    {
+      "app": "notifications",
+      "hostname": "notifications-gateway.svc",
+      "name": "gateway",
+      "port": 1234
+    }
+  ],
+  "privateEndpoints": [
+    {
+      "app": "notifications",
+      "hostname": "notifications-engine.svc",
+      "name": "engine",
+      "port": 5555
+    }
+  ]
+}

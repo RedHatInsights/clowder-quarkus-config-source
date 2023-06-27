@@ -9,6 +9,7 @@ public class ClowderConfig {
 
     public DatabaseConfig database;
     public List<EndpointConfig> endpoints;
+    public List<PrivateEndpointConfig> privateEndpoints;
     public KafkaConfig kafka;
     public LoggingConfig logging;
     public String metricsPath;

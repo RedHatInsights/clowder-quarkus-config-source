@@ -59,6 +59,7 @@ public class ClowderConfigSource implements ConfigSource {
     private static final String QUARKUS_LOG_CLOUDWATCH = "quarkus.log.cloudwatch";
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
+    private static final String CLOWDER_PRIVATE_ENDPOINTS = "clowder.private.endpoints.";
     private static final String CLOWDER_ENDPOINTS_PARAM_URL = "url";
     private static final String CLOWDER_ENDPOINT_STORE_TYPE = "PKCS12";
     private static final String CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH = "trust-store-path";
@@ -404,6 +405,86 @@ public class ClowderConfigSource implements ConfigSource {
                     throw e;
                 }
             }
+
+            if (configKey.startsWith(CLOWDER_PRIVATE_ENDPOINTS)) {
+                try {
+                    if (root.privateEndpoints == null) {
+                        throw new IllegalStateException("No private endpoints section found");
+                    }
+                    final String requestedEndpointConfig = configKey.substring(CLOWDER_PRIVATE_ENDPOINTS.length());
+                    final String[] configPath = requestedEndpointConfig.split("\\.");
+
+                    final String requestedPrivateEndpoint;
+                    final String param;
+                    final String FORMAT_EXAMPLE = "[private-endpoint-name].[url|trust-store-path|trust-store-password|trust-store-type]";
+                    if (configPath.length == 1) {
+                        log.warnf("Private endpoint '%s' is using the old format. Please move to the new one: %s", requestedEndpointConfig, FORMAT_EXAMPLE);
+                        requestedPrivateEndpoint = configPath[0];
+                        param = CLOWDER_ENDPOINTS_PARAM_URL;
+                    } else if (configPath.length != 2) {
+                        throw new IllegalArgumentException(String.format("Private endpoint '%s' expects a different format: %s" +requestedEndpointConfig, FORMAT_EXAMPLE));
+                    } else {
+                        requestedPrivateEndpoint = configPath[0];
+                        param = configPath[1];
+                    }
+
+                    PrivateEndpointConfig privateEndpoint = null;
+
+                    for (final PrivateEndpointConfig privateEndpointCandidate : root.privateEndpoints) {
+                        final String currentEndpoint = String.format("%s-%s", privateEndpointCandidate.app, privateEndpointCandidate.name);
+                        if (currentEndpoint.equals(requestedPrivateEndpoint)) {
+                            privateEndpoint = privateEndpointCandidate;
+                            break;
+                        }
+                    }
+
+                    if (privateEndpoint == null) {
+                        log.warnf("Private endpoint '%s' not found in the private endpoints section", requestedPrivateEndpoint);
+                        return null;
+                    }
+
+                    switch (param) {
+                        case CLOWDER_ENDPOINTS_PARAM_URL:
+                            if (usesTls(privateEndpoint)) {
+                                return String.format("https://%s:%s", privateEndpoint.hostname, privateEndpoint.tlsPort);
+                            } else {
+                                return String.format("http://%s:%s", privateEndpoint.hostname, privateEndpoint.port);
+                            }
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
+                            if (usesTls(privateEndpoint)) {
+                                ensureTlsCertPathIsPresent();
+
+                                createTruststoreFile(root.tlsCAPath);
+                                return trustStorePath;
+                            }
+
+                            return null;
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
+                            if (usesTls(privateEndpoint)) {
+                                ensureTlsCertPathIsPresent();
+
+                                createTruststoreFile(root.tlsCAPath);
+                                return trustStorePassword;
+                            }
+
+                            return null;
+                        case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
+                            if (usesTls(privateEndpoint)) {
+                                ensureTlsCertPathIsPresent();
+
+                                return CLOWDER_ENDPOINT_STORE_TYPE;
+                            }
+
+                            return null;
+                        default:
+                            log.warnf("Private endpoint '%s' requested an unknown param: '%s'", requestedPrivateEndpoint, param);
+                            return null;
+                    }
+                } catch (IllegalStateException e) {
+                    log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
+                    throw e;
+                }
+            }
         }
 
         if (existingValues.containsKey(configKey)) {
@@ -428,6 +509,10 @@ public class ClowderConfigSource implements ConfigSource {
 
     private boolean usesTls(EndpointConfig endpointConfig) {
         return endpointConfig.tlsPort != null && !endpointConfig.tlsPort.equals(PORT_NOT_SET);
+    }
+
+    private boolean usesTls(final PrivateEndpointConfig privateEndpointConfig) {
+        return privateEndpointConfig.tlsPort != null && !privateEndpointConfig.tlsPort.equals(PORT_NOT_SET);
     }
 
     private void ensureTlsCertPathIsPresent() {
