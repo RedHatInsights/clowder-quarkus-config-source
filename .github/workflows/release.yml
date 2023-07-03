@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+      - main
+name: release
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - id: release
+        uses: google-github-actions/release-please-action@v3
+        with:
+          release-type: maven
+          package-name: com.redhat.cloud.common.clowder-quarkus-config-source
+  auto-merge-snapshot:
+    needs: [ release ]
+    runs-on: ubuntu-latest
+    if: "${{ needs.release.outputs.pr && contains(fromJSON(needs.release.outputs.pr).labels, 'autorelease: snapshot') }}"
+    steps:
+      - id: auto-merge
+        uses: "pascalgn/automerge-action@v0.15.6"
+        env:
+          MERGE_LABELS: "autorelease: snapshot"
+          MERGE_METHOD: rebase
+          MERGE_RETRIES: 10
+          MERGE_RETRY_SLEEP: 10000
+          PULL_REQUEST: ${{ fromJSON(needs.release.outputs.pr).number }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+  publish:
+    needs: [ release ]
+    runs-on: ubuntu-latest
+    if: ${{ needs.release.outputs.release_created }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Set up Maven Central Repository
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: adopt
+          server-id: jboss.staging
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Publish package
+        run: mvn --batch-mode deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
