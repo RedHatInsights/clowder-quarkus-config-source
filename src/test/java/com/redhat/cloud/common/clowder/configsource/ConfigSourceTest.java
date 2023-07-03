@@ -388,4 +388,67 @@ public class ConfigSourceTest {
         assertEquals("MIIFgTCCA2mgAwIBAgIJAPWS//Ai2FLxMA0GCSqGSIb3DQEBCwUAMFcxCzAJBgNVBAYTAlhYMRAwDgYDVQQIDAd1bmtub3duMRAwDgYDVQQHDAd1bmtub3duMRAwDgYDVQQKDAd1bmtub3duMRIwEAYDVQQDDAlsb2NhbGhvc3QwHhcNMjMwMzA2MTcyNDU2WhcNMjMwNDA1MTcyNDU2WjBXMQswCQYDVQQGEwJYWDEQMA4GA1UECAwHdW5rbm93bjEQMA4GA1UEBwwHdW5rbm93bjEQMA4GA1UECgwHdW5rbm93bjESMBAGA1UEAwwJbG9jYWxob3N0MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArEaE0E9XdzER7eqbOwsHad2zHygF06YfO87wrbJmae+CplZJWDzo/9KwhbvmhUuJ5Q5WNG5gOzuogw+xUGZ4Hr2uyD0JMhBVyipo+sh+Y3zdAHnogzKBS/OouKbLC3bBeVuzh51vKbaTB8jWqyRPVkgFlDng6B+1cdwCeTr8pRvfNb4EVUFMTSbspnn+mMzPaZqvBwl/T/kGUgg9rmZjGWfRpNEs5/IU+of/r+ak8UZbU2G+luml6rpyzEBwVTNx35JwvBQgWuPfZm/k1LsF9OXiQU+E+Cz4DPzVAGIgPvzu2FYr+onYq09aQ75WtH6/LlRDTVexy4VQrJA6Xwd/l6pYToHgOjlTXR8lbgkGgMvWWVgXCUNz5E+6GDgKxK5snfWSufF57zR1HrxbdW76irXPMVYaXxQ/gj8dts1xZnyE5/2AYvJT4sMEalGEqgt3SDMjRqBsKr0frsHZ0o1oJMjChc37HFiYPNaAaZdTZ37bOQp0So0ex0NVdFaWjSJfgIpNXzPxYIoHNuJHlvduAMPnK1dh13A8U2gC9szNwLi7TYq82MqhRYbf/qcv10sZNo2iUsCBlO9zB6Y9lpiY2Qmht7lJ2o4f2Ke1TdBm1y6o5MQQWbBo5nP2j37PZJS5qz8LJaIzSaCuX5fs7ifnHaho9uxjVtKocf7qI7qBCXcCAwEAAaNQME4wHQYDVR0OBBYEFMEvvXfdRUBi0GmJVALBk3Onn0W8MB8GA1UdIwQYMBaAFMEvvXfdRUBi0GmJVALBk3Onn0W8MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBAAev6v4un8KSPpwbDE1W6CR9wiUR6RNo+dlgtdQFQKufe/d3A8TbZRiKQZVy/ez1Zi00qHAY7wnGZQejwfVJYgwtKX/kE1wNnbO3t6LP7Iz3JeBo8/pa8Ajf+n6YX5YlJ5IbUVsX4pkyITHvjOUuPm940He8jr4aVqf7HT9K0drgRAX657V4ci+psEvZSBjUFItUrv2xpfK0yykMSrUFulKF5gfJvCVoWBcqMLazaTPMnBWCwgndi9mvE+N345l05aK+5Jxu6piewEcPiKyu1OAGWvlqV9/fj8KmrWSJXM26JwKmUxlewtB3TzLfOGWHeFYSrEdWva/jxO8ZgxZJoM68AQQbUqZyXGHwLzZ0nlF/94051WJK+YZ+4d1397LvYeOpcxb0qiA/xxGhBspV8llgUmdPW090C4LeU14nZK88p3gSFVW/NZ1Mrxl2XnnL2EjerkWRmFAxPe66QSPUGFGfsSvUeGB8BsKAxs3bovQBqw/UJ8aWfJNEQOSjKR0qkwl5hs910dluzxRQW7IrH676LimyGMbADbI0JxzT4JdT2nFyJnSFXXKPhybr6fs85fgb/dYZrn0cl/KcAddEiBNT9f5KHRFQDr31tu10TU3RGa1TR8r9aoelUFhK3d0ECspPw9iGmjOFup7cIsSJYk+0Aefwnxi9ca0OXKUCVxYs", certs.get(1));
         assertEquals("MIIFgTCCA2mgAwIBAgIJAIGzkhzYA2UMMA0GCSqGSIb3DQEBCwUAMFcxCzAJBgNVBAYTAlhYMRAwDgYDVQQIDAd1bmtub3duMRAwDgYDVQQHDAd1bmtub3duMRAwDgYDVQQKDAd1bmtub3duMRIwEAYDVQQDDAlsb2NhbGhvc3QwHhcNMjMwMzA2MTcwNTIwWhcNMjMwNDA1MTcwNTIwWjBXMQswCQYDVQQGEwJYWDEQMA4GA1UECAwHdW5rbm93bjEQMA4GA1UEBwwHdW5rbm93bjEQMA4GA1UECgwHdW5rbm93bjESMBAGA1UEAwwJbG9jYWxob3N0MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAymTDYToVyWUvV0ioRFbp9uZ8WOiC88D1Nx4JX0VR29q1orvtF2+P+/4/sAwlYPojS4VhmVsQPbS7bZVZ022N7jno3p7ZYTyd08nnW3QP51W7oJmzypjuOnG/kHvMtgzlQi5Irz8ka7n9regLqiIHvtdGG+ft1O1snutyxvpi2BAuW/F3QUwjIECXoKzmuQtVIRuemt+pFHQp8NB3q80SpHLelG11bBNOAESCDDszN5tnzIcDxOxO3QuhclHKwfiRF6R2vGTVGLrGbmWrRU08A1VP/rA9cU+bfb8jPBDvxBmPwSGWpr/6IikLtpYyuFF8AzHOTELAgnGNP3FLQNVZ+s4Gx4nHMxeEg9X+xFx3x217lTizZ8JOn+kFoT8bmsQoMj0ZDc/grR5RH6R1mho4wjog6SmvuCJpqARyioWyyLdcj8xKAdBQZ6ZVOWf5jQ0Z09kS5KVXFLxS1cL/kbMkGev1ityX+w+zQcgHFO1PswC10VCkpVo1ypurVpWjvEJYwpdm3UhawK76OLTBeHyuejSNlH/u1gybHLsPImUgI4svUqZTZqBgcKwIXzpAbhsa7da+IOVlIPUlGbDpMmrprw/9+uNu9Lrq7mszoJjDzgoSGY6HJW3QmDX9/KBP9p8GhbkZA5cMKfj1dAdQrvK1C72yEdi13FR/FqKtamixPHcCAwEAAaNQME4wHQYDVR0OBBYEFCNk8S9w77ADF8oukI/4QkuelbQ1MB8GA1UdIwQYMBaAFCNk8S9w77ADF8oukI/4QkuelbQ1MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBABh/jJlqLCyUOJ4fypmihWcWLooQINBeeuvhoiEFYxI16f+0jVmJI0FwEjRyz8FM2jxvXJnr3ErhzLBNI+jqTyzU2Dr/gD2ZyU3RFv8X+l9x3cSXNUHYk/y53V6/6GyQU06OQcoHi+ksawppdhpfn/G8ep8aB/yF2krL/JRuq8igXvKuwCUjgAFKQk27UcKDiGLfmvtivBpLqjniqF8C27RnaDVIOw/sZB8G1xVzBzRGawdm5VNKLQv2GrIoxySSAtEdjyCKEkUWkmDlpmQQM6ZWAGx/+G6y7KWMLCWXCn6rWtPl10ucUjm+cVycox4a3bB5OCTo0ws5jK4AUYxrq2VI0ISxnc3RUhXLlctOV7eD2jlmKctp6dTFYenQqwQ2nBYOu0wwTbd57MrFz3L1xr83bagjk2zjEakg4bdOK/KZdSfW1cTznSF9/SKr3LXvV6ux1oD8qtfwFOKCyba2qYycnghQ9Ev50yyXt3mM/IhbfQ7EAfir/m702wyqpc4lR1RjDB4Y+P7z/RRLUSMpAd0Lc3zsh+KQYLrMlQsRKPFzzJqSnmf7slyDqRTrDrtKWASldaZmllqDGwmbG+ygEtdt0SXRol9kg0X+QtykCtuMGSrpKt0qu9wV0Fc7mnJDRtW65OjHGUSDrYFUorRwl3ijzgPe4zaH9I1P6xJ1qL8D", certs.get(2));
     }
+
+    /**
+     * Tests that both regular and private endpoints are correctly read.
+     */
+    @Test
+    void endpointsAndPrivateEndpoints() {
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig5.json", APP_PROPS_MAP);
+
+        // Read the regular endpoints.
+        assertEquals("http://notifications-api.svc:9876", source.getValue("clowder.endpoints.notifications-api.url"));
+        assertEquals("http://notifications-gateway.svc:1234", source.getValue("clowder.endpoints.notifications-gateway.url"));
+
+        // Read the private endpoints.
+        assertEquals("http://notifications-engine.svc:5555", source.getValue("clowder.private-endpoints.notifications-engine.url"));
+    }
+
+    /**
+     * Tests that the URL value contains the "https" prefix and that the key
+     * store with the single certificate gets created.
+     */
+    @Test
+    void testSecuredPrivateEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP);
+
+        assertEquals("https://notifications-api.svc:9876", cc.getValue("clowder.private-endpoints.notifications-api.url"));
+
+        final String path = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-path");
+        final String password = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-password");
+        final String type = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-type");
+
+        assertNotNull(path);
+        assertNotNull(password);
+        assertNotNull(type);
+
+        final KeyStore keyStore = KeyStore.getInstance(type);
+        keyStore.load(new FileInputStream(path), password.toCharArray());
+
+        assertEquals(1, Collections.list(keyStore.aliases()).size());
+    }
+
+    /**
+     * Tests that the URL value contains the "https" prefix and that the key
+     * store with multiple certificates gets created.
+     */
+    @Test
+    void testSecuredPrivateEndpointMultipleCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint_multiple_cert.json", APP_PROPS_MAP);
+
+        assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.private-endpoints.notifications-api.url"));
+
+        final String path = source.getValue("clowder.private-endpoints.notifications-api.trust-store-path");
+        final String password = source.getValue("clowder.private-endpoints.notifications-api.trust-store-password");
+        final String type = source.getValue("clowder.private-endpoints.notifications-api.trust-store-type");
+
+        assertNotNull(path);
+        assertNotNull(password);
+        assertNotNull(type);
+
+        final KeyStore keyStore = KeyStore.getInstance(type);
+        keyStore.load(new FileInputStream(path), password.toCharArray());
+
+        assertEquals(3, Collections.list(keyStore.aliases()).size());
+    }
 }
