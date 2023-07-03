@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.1...v1.5.0) (2023-07-03)
+
+
+### Features
+
+* Bump Java from 11 to 17 ([#159](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/159)) ([eb65d59](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/eb65d5953ddeb52336ed620d6ac45f7e6af1d875))
+
+
+### Bug Fixes
+
+* Deploy sources and javadoc ([#160](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/160)) ([e9408d1](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/e9408d1f1fffd71c4d6cf8cddad50c9a47301dd3))
+
 ## [1.4.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.0...v1.4.1) (2023-07-03)
 
 
