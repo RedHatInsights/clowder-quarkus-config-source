@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.0...v1.4.1) (2023-07-03)
+
+
+### Bug Fixes
+
+* Add nexus-staging-maven-plugin ([#156](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/156)) ([4b0dde5](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/4b0dde5b63b4de87a475503a3ec0b5cc6d5c2f15))
+
 ## [1.4.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.3.0...v1.4.0) (2023-07-03)
 
 
