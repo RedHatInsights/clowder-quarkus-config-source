@@ -407,7 +407,7 @@ public class ConfigSourceTest {
         final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_missing_endpoints.json", APP_PROPS_MAP);
 
         // The returned value should be the empty string.
-        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-inexistent.url"));
+        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.url"));
     }
 
     /**
