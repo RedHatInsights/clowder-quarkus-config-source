@@ -466,13 +466,13 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalEndpointEmptyString() {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_missing_endpoints.json", APP_PROPS_MAP);
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_missing_endpoints.json", APP_PROPS_MAP);
 
-        assertEquals("", cc.getValue("clowder.optional-endpoints.notifications-api.url"));
+        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.url"));
 
-        assertEquals("", cc.getValue("clowder.optional-endpoints.notifications-api.trust-store-path"));
-        assertEquals("", cc.getValue("clowder.optional-endpoints.notifications-api.trust-store-password"));
-        assertEquals("", cc.getValue("clowder.optional-endpoints.notifications-api.trust-store-type"));
+        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.trust-store-path"));
+        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.trust-store-password"));
+        assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.trust-store-type"));
     }
 
     /**
@@ -496,13 +496,13 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredPrivateEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP);
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP);
 
-        assertEquals("https://notifications-api.svc:9876", cc.getValue("clowder.private-endpoints.notifications-api.url"));
+        assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.private-endpoints.notifications-api.url"));
 
-        final String path = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-path");
-        final String password = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-password");
-        final String type = cc.getValue("clowder.private-endpoints.notifications-api.trust-store-type");
+        final String path = source.getValue("clowder.private-endpoints.notifications-api.trust-store-path");
+        final String password = source.getValue("clowder.private-endpoints.notifications-api.trust-store-password");
+        final String type = source.getValue("clowder.private-endpoints.notifications-api.trust-store-type");
 
         assertNotNull(path);
         assertNotNull(password);
@@ -568,13 +568,13 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalPrivateEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP);
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP);
 
-        assertEquals("https://notifications-api.svc:9876", cc.getValue("clowder.optional-private-endpoints.notifications-api.url"));
+        assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.optional-private-endpoints.notifications-api.url"));
 
-        final String path = cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-path");
-        final String password = cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-password");
-        final String type = cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-type");
+        final String path = source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-path");
+        final String password = source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-password");
+        final String type = source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-type");
 
         assertNotNull(path);
         assertNotNull(password);
@@ -617,12 +617,12 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalPrivateEndpointEmptyString() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig.json", APP_PROPS_MAP);
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig.json", APP_PROPS_MAP);
 
-        assertEquals("", cc.getValue("clowder.optional-private-endpoints.notifications-api.url"));
+        assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.url"));
 
-        assertEquals("", cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-path"));
-        assertEquals("", cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-password"));
-        assertEquals("", cc.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-type"));
+        assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-path"));
+        assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-password"));
+        assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-type"));
     }
 }
