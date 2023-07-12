@@ -60,6 +60,7 @@ public class ClowderConfigSource implements ConfigSource {
     private static final String QUARKUS_DATASOURCE_JDBC_URL = "quarkus.datasource.jdbc.url";
     private static final String CLOWDER_ENDPOINTS = "clowder.endpoints.";
     private static final String CLOWDER_PRIVATE_ENDPOINTS = "clowder.private-endpoints.";
+    private static final String CLOWDER_OPTIONAL_ENDPOINTS = "clowder.optional-endpoints.";
     private static final String CLOWDER_OPTIONAL_PRIVATE_ENDPOINTS = "clowder.optional-private-endpoints.";
     private static final String CLOWDER_ENDPOINTS_PARAM_URL = "url";
     private static final String CLOWDER_ENDPOINT_STORE_TYPE = "PKCS12";
@@ -335,6 +336,20 @@ public class ClowderConfigSource implements ConfigSource {
 
                     return this.processEndpoints(this.root.endpoints, configKey, CLOWDER_ENDPOINTS, "Endpoint");
                 } catch (IllegalStateException e) {
+                    log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
+                    throw e;
+                }
+            }
+
+            if (configKey.startsWith(CLOWDER_OPTIONAL_ENDPOINTS)) {
+                try {
+                    if (root.endpoints == null) {
+                        log.infof("No endpoints section found. Returning empty string for the \"%s\" configuration key", configKey);
+                        return "";
+                    }
+
+                    return this.processEndpoints(this.root.endpoints, configKey, CLOWDER_OPTIONAL_ENDPOINTS, "Endpoint");
+                } catch (final IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
                 }
