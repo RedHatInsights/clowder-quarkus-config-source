@@ -343,7 +343,7 @@ public class ClowderConfigSource implements ConfigSource {
             if (configKey.startsWith(CLOWDER_OPTIONAL_PRIVATE_ENDPOINTS)) {
                 try {
                     if (root.privateEndpoints == null) {
-                        log.errorf("No private endpoints section found. Returning empty string for the \"%s\" configuration key", configKey);
+                        log.infof("No private endpoints section found. Returning empty string for the \"%s\" configuration key", configKey);
                         return "";
                     }
 
