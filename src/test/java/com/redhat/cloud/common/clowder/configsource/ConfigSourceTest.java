@@ -411,6 +411,15 @@ public class ConfigSourceTest {
     }
 
     /**
+     * Tests that when a configuration key for an optional endpoint doesn't
+     * exist, a null value is returned.
+     */
+    @Test
+    void testOptionalEndpointNotExistsConfigurationKey() {
+        assertNull(ccs.getValue("clowder.optional-endpoints.non-existent.url"));
+    }
+
+    /**
      * Tests that the URL value contains the "https" prefix and that the key
      * store with the single certificate gets created when an optional endpoint
      * is specified in the configuration key.
@@ -489,6 +498,18 @@ public class ConfigSourceTest {
         // Read the private endpoints.
         assertEquals("http://notifications-engine.svc:5555", source.getValue("clowder.private-endpoints.notifications-engine.url"));
     }
+
+    /**
+     * Tests that when a configuration key for an optional private endpoint
+     * doesn't exist, a null value is returned.
+     */
+    @Test
+    void testOptionalPrivateEndpointNotExistsConfigurationKey() {
+        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig5.json", APP_PROPS_MAP);
+
+        assertNull(source.getValue("clowder.optional-private-endpoints.non-existent.url"));
+    }
+
 
     /**
      * Tests that the URL value contains the "https" prefix and that the key
