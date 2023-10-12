@@ -438,7 +438,7 @@ public class ClowderConfigSource implements ConfigSource {
         }
 
         if (endpointConfig == null) {
-            log.warnf("%s '%s' not found in the %1s section", endpointType, requestedEndpoint);
+            log.warnf("%s '%s' not found in the %s section", endpointType, requestedEndpoint, clowderKey.substring(0, clowderKey.length() - 1));
             return null;
         }
 
