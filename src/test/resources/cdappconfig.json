@@ -38,6 +38,22 @@
       {
         "name": "platform-tmp-666",
         "requestedName": "platform.notifications.alerts"
+      },
+      {
+        "name": "platform-system-property",
+        "requestedName": "platform.notifications.system"
+      },
+      {
+        "name": "platform-computed-property",
+        "requestedName": "custom-topic"
+      },
+      {
+        "name": "platform-partial-computed-property",
+        "requestedName": "partial-custom-topic-value"
+      },
+      {
+        "name": "platform-nested-properties",
+        "requestedName": "nested-topic"
       }
     ]
   },

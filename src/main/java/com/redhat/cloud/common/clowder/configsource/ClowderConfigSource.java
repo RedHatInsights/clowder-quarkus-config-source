@@ -28,6 +28,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.redhat.cloud.common.clowder.configsource.utils.ComputedPropertiesUtils.PROPERTY_END;
+import static com.redhat.cloud.common.clowder.configsource.utils.ComputedPropertiesUtils.PROPERTY_START;
+import static com.redhat.cloud.common.clowder.configsource.utils.ComputedPropertiesUtils.getPropertyFromSystem;
+import static com.redhat.cloud.common.clowder.configsource.utils.ComputedPropertiesUtils.getComputedProperties;
+import static com.redhat.cloud.common.clowder.configsource.utils.ComputedPropertiesUtils.hasComputedProperties;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -82,6 +87,7 @@ public class ClowderConfigSource implements ConfigSource {
     // Fixed length for the password used - it could probably be anything else - but ran my tests on a FIPS environment with these.
     private static final int DEFAULT_PASSWORD_LENGTH = 33;
     private static final Integer PORT_NOT_SET = 0;
+    private static final String PROPERTY_DEFAULT = ":";
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
@@ -182,7 +188,7 @@ public class ClowderConfigSource implements ConfigSource {
                 }
                 // We need to find the replaced topic by first finding
                 // the requested name and then getting the replaced name
-                String requested = existingValues.get(configKey).getValue();
+                String requested = resolveValue(existingValues.get(configKey).getValue());
                 for (TopicConfig topic : root.kafka.topics) {
                     if (topic.requestedName.equals(requested)) {
                         return topic.name;
@@ -628,5 +634,37 @@ public class ClowderConfigSource implements ConfigSource {
             log.warnf(e, "Delete on exit of the '%s' cert file denied by the security manager", fileName);
         }
         return file;
+    }
+
+    private String resolveValue(String property) {
+        if (!hasComputedProperties(property)) {
+            return property;
+        }
+
+        for (String rawSystemProperty : getComputedProperties(property)) {
+            String value = null;
+            String systemProperty = rawSystemProperty;
+            if (systemProperty.contains(PROPERTY_DEFAULT)) {
+                int splitPosition = systemProperty.indexOf(PROPERTY_DEFAULT);
+                value = systemProperty.substring(splitPosition + PROPERTY_DEFAULT.length());
+                systemProperty = systemProperty.substring(0, splitPosition);
+
+                if (hasComputedProperties(value)) {
+                    value = resolveValue(value);
+                }
+            }
+
+            ConfigValue computedValue = existingValues.get(systemProperty);
+            if (computedValue != null) {
+                value = computedValue.getValue();
+            } else {
+                // Check whether the system property is provided:
+                value = getPropertyFromSystem(systemProperty, value);
+            }
+
+            property = property.replace(PROPERTY_START + rawSystemProperty + PROPERTY_END, value);
+        }
+
+        return property;
     }
 }

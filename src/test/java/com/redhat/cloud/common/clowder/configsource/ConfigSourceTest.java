@@ -102,6 +102,30 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testKafkaOutgoingWithSystemProperty() {
+        String topic = ccs.getValue("mp.messaging.outgoing.system.topic");
+        assertEquals("platform-system-property", topic);
+    }
+
+    @Test
+    void testKafkaOutgoingWithNestedSystemProperty() {
+        String topic = ccs.getValue("mp.messaging.outgoing.nested-properties.topic");
+        assertEquals("platform-nested-properties", topic);
+    }
+
+    @Test
+    void testKafkaIncomingWithComputedProperty() {
+        String topic = ccs.getValue("mp.messaging.incoming.computed.topic");
+        assertEquals("platform-computed-property", topic);
+    }
+
+    @Test
+    void testKafkaIncomingWithPartialComputedProperty() {
+        String topic = ccs.getValue("mp.messaging.incoming.partial-computed.topic");
+        assertEquals("platform-partial-computed-property", topic);
+    }
+
+    @Test
     void testDatabaseCredentials() {
         String user = ccs.getValue("quarkus.datasource.username");
         String pass = ccs.getValue("quarkus.datasource.password");
