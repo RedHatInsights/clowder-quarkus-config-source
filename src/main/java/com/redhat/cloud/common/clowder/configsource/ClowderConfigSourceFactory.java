@@ -27,13 +27,18 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
         ConfigValue cv = configSourceContext.getValue("acg.config");
-        String clowderConfig;
+        ConfigValue exposeKafkaSslConfigKeysCv = configSourceContext.getValue("acg.config.expose.kafka.ssl.config.keys");
+        String clowderConfig = "/cdapp/cdappconfig.json";
+        boolean exposeKafkaSslConfigKeys = false;
         if (cv != null && cv.getValue() != null) {
             clowderConfig = cv.getValue();
-        } else {
-            clowderConfig = "/cdapp/cdappconfig.json";
         }
         log.info("Using ClowderConfigSource with config at " + clowderConfig);
+
+        if (exposeKafkaSslConfigKeysCv != null && exposeKafkaSslConfigKeysCv.getValue() != null) {
+            exposeKafkaSslConfigKeys = Boolean.valueOf(exposeKafkaSslConfigKeysCv.getValue());
+        }
+        log.info("Expose Kafka config keys: " + exposeKafkaSslConfigKeys);
 
         // It should be used, so get the existing key-values and
         // supply them to our source.
@@ -57,7 +62,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
             }
         });
 
-        return Collections.singletonList(new ClowderConfigSource(clowderConfig, exProp));
+        return Collections.singletonList(new ClowderConfigSource(clowderConfig, exProp, exposeKafkaSslConfigKeys));
     }
 
     @Override

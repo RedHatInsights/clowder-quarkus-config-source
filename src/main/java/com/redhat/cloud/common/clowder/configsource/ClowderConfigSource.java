@@ -2,6 +2,7 @@ package com.redhat.cloud.common.clowder.configsource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.config.ConfigValue;
+import java.util.HashSet;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.logging.Logger;
 
@@ -91,15 +92,19 @@ public class ClowderConfigSource implements ConfigSource {
     private String trustStorePath;
     private String trustStorePassword;
 
+    private boolean exposeKafkaSslConfigKeys;
+
     /**
      * <p>Constructor for ClowderConfigSource.</p>
      *
-     * @param configFile Name/Path of a file to read the config from.
-     * @param exProp {@link java.util.Map} containing the existing properties from e.g. application.properties.
+     * @param configFile               Name/Path of a file to read the config from.
+     * @param exProp                   {@link Map} containing the existing properties from e.g. application.properties.
+     * @param exposeKafkaSslConfigKeys
      */
-    public ClowderConfigSource(String configFile, Map<String, ConfigValue> exProp) {
+    public ClowderConfigSource(String configFile, Map<String, ConfigValue> exProp, boolean exposeKafkaSslConfigKeys) {
 
         existingValues = exProp;
+        this.exposeKafkaSslConfigKeys = exposeKafkaSslConfigKeys;
         File file = new File(configFile);
         if (!file.canRead()) {
             log.warn("Can't read clowder config from " + file.getAbsolutePath() + ", not doing translations.");
@@ -133,7 +138,18 @@ public class ClowderConfigSource implements ConfigSource {
 
     @Override
     public Set<String> getPropertyNames() {
-        return existingValues.keySet();
+
+        Set<String> availableProperties = new HashSet<>(existingValues.keySet());
+
+        if(exposeKafkaSslConfigKeys) {
+            for(String key : KAFKA_SASL_KEYS) {
+                String value = getValue(key);
+                if (value != null && value.trim().length()>0) {
+                    availableProperties.add(key);
+                }
+            }
+        }
+        return availableProperties;
     }
 
     @Override
