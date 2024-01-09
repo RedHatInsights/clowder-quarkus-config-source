@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.1...v1.5.0) (2023-09-08)
+
+This release depends on Quarkus 3.2.5.Final and should NOT be used in an application that depends on Quarkus 2 or lower.
+
 ## [1.5.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.1...v1.5.0) (2023-07-03)
 
 
