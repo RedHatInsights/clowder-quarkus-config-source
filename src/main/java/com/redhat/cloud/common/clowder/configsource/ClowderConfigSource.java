@@ -141,10 +141,10 @@ public class ClowderConfigSource implements ConfigSource {
 
         Set<String> availableProperties = new HashSet<>(existingValues.keySet());
 
-        if(exposeKafkaSslConfigKeys) {
-            for(String key : KAFKA_SASL_KEYS) {
+        if (exposeKafkaSslConfigKeys) {
+            for (String key : KAFKA_SASL_KEYS) {
                 String value = getValue(key);
-                if (value != null && value.trim().length()>0) {
+                if (value != null && !value.isBlank()) {
                     availableProperties.add(key);
                 }
             }
