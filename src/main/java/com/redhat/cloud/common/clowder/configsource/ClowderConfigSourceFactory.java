@@ -27,7 +27,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
     public Iterable<ConfigSource> getConfigSources(ConfigSourceContext configSourceContext) {
 
         ConfigValue cv = configSourceContext.getValue("acg.config");
-        ConfigValue exposeKafkaSslConfigKeysCv = configSourceContext.getValue("acg.config.expose.kafka.ssl.config.keys");
+        ConfigValue exposeKafkaSslConfigKeysCv = configSourceContext.getValue("feature-flags.expose-kafka-ssl-config-keys.enabled");
         String clowderConfig = "/cdapp/cdappconfig.json";
         boolean exposeKafkaSslConfigKeys = false;
         if (cv != null && cv.getValue() != null) {
