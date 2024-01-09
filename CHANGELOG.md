@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.1.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.5.0...v1.6.0) (2024-01-09)
+
+
+### Features
+
+* Be able to expose Kafka config keys from ClowderConfigSource ([#198](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/198)) ([35f5e7c](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/35f5e7cdb425b1b245226a821fa3a088f5168bbf))
+
+
+### Bug Fixes
+
+* artefact version ([#200](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/200)) ([56b0ef2](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/56b0ef23353bff6519b1afec7bde862db69fd72a))
+
 ## [2.0.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.4.1...v1.5.0) (2023-09-08)
 
 This release depends on Quarkus 3.2.5.Final and should NOT be used in an application that depends on Quarkus 2 or lower.
