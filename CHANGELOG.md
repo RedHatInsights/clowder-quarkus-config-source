@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.2.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.1.0...v2.2.0) (2024-01-10)
+
+
+### Features
+
+* Be able to expose Kafka config keys from ClowderConfigSource ([#198](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/198)) ([35f5e7c](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/35f5e7cdb425b1b245226a821fa3a088f5168bbf))
+* Bump Java from 11 to 17 ([#159](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/159)) ([eb65d59](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/eb65d5953ddeb52336ed620d6ac45f7e6af1d875))
+* Fix project version and trigger a new release ([#153](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/153)) ([fe5a37e](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/fe5a37e04a2c06d332ab2622c2e520a8de76e12d))
+* support Camel Kafka props ([#96](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/96)) ([3fc6e40](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/3fc6e40fc919a09017112605fea85368f5658f78))
+
+
+### Bug Fixes
+
+* Add nexus-staging-maven-plugin ([#156](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/156)) ([4b0dde5](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/4b0dde5b63b4de87a475503a3ec0b5cc6d5c2f15))
+* artefact version ([#200](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/200)) ([56b0ef2](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/56b0ef23353bff6519b1afec7bde862db69fd72a))
+* Deploy sources and javadoc ([#160](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/160)) ([e9408d1](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/e9408d1f1fffd71c4d6cf8cddad50c9a47301dd3))
+* **logging:** only look for type null ([#87](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/87)) ([0eba62c](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/0eba62c6e484251eabcc1c42de61a52cfdd51f1e))
+* restart release 2.1.0 ([#204](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/204)) ([a0d051e](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/a0d051e64b8b335293806e15e52cb7fe461363e0))
+
 ## [2.1.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v1.5.0...v1.6.0) (2024-01-09)
 
 
