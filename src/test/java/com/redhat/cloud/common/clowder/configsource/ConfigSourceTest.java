@@ -393,6 +393,90 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testKafkaSsl() {
+        final ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNotNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNotNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));;
+        assertEquals("SSL", ccs2.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNotNull(ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertNotNull(ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        final ClowderConfigSource ccs3 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type.json", APP_PROPS_MAP, true);
+
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+    }
+
+    @Test
+    void testKafkaSslUsingCommonCa() {
+        final ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type_common_ca.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
+        assertEquals("SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs2.getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(CAMEL_KAFKA_SASL_MECHANISM_KEY));;
+        assertEquals("SSL", ccs2.getValue(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertNull(ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertThrows(IllegalStateException.class, () -> ccs2.getValue(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        final ClowderConfigSource ccs3 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type_common_ca.json", APP_PROPS_MAP, true);
+
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+    }
+
+    @Test
     void testSecuredEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_endpoint.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
 
