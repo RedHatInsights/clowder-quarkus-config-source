@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.3.0...v2.4.0) (2024-02-13)
+
+
+### Features
+
+* [RHCLOUD-30340] add Kafka SSL config with a certificate provide… ([#211](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/211)) ([6922171](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/69221710f4a9a640093690f3ef09cbb8168ec51f))
+
 ## [2.3.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.2.0...v2.3.0) (2024-01-12)
 
 
