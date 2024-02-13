@@ -149,7 +149,7 @@ public class ClowderConfigSource implements ConfigSource {
                         availableProperties.add(key);
                     }
                 } catch (IllegalStateException ie) {
-                    log.debugf(ie.getMessage());
+                    log.debug(ie.getMessage());
                 }
             }
         }
