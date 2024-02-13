@@ -10,4 +10,5 @@ public class BrokerConfig {
     public String cacert;
     public String authtype;
     public SaslConfig sasl;
+    public String securityProtocol;
 }

@@ -1,0 +1,75 @@
+{
+  "database": {
+    "adminPassword": "s3cr3t",
+    "adminUsername": "postgres",
+    "hostname": "some.host",
+    "name": "some-db",
+    "password": "secret",
+    "port": 15432,
+    "sslMode": "require",
+    "username": "aUser"
+  },
+  "endpoints": [
+    {
+      "app": "notifications",
+      "hostname": "n-api.svc",
+      "name": "api",
+      "port": 8000
+    },
+    {
+      "app": "notifications",
+      "hostname": "n-gw.svc",
+      "name": "gw",
+      "port": 8000
+    }
+  ],
+  "kafka": {
+    "brokers": [
+      {
+        "hostname": "ephemeral-host.svc",
+        "port": 29092,
+        "cacert": "Dummy value",
+        "securityProtocol":"SSL"
+      }
+    ],
+    "topics": [
+      {
+        "name": "platform-tmp-12345",
+        "requestedName": "platform.notifications.ingress"
+      },
+      {
+        "name": "platform-tmp-666",
+        "requestedName": "platform.notifications.alerts"
+      }
+    ]
+  },
+  "logging": {
+    "cloudwatch": {
+      "accessKeyId": "my-key-id",
+      "logGroup": "my-log-group",
+      "region": "eu-central-1",
+      "secretAccessKey": "very-secret"
+    },
+    "type": "null"
+  },
+  "metricsPath": "/metrics",
+  "metricsPort": 9000,
+  "objectStore": {
+    "accessKey": "secret",
+    "buckets": [
+      {
+        "accessKey": "more-secret",
+        "name": "returned-name",
+        "requestedName": "a-bucket",
+        "secretKey": "really-secret"
+      }
+    ],
+    "hostname": "minio12345.svc",
+    "port": 9000,
+    "secretKey": "another-secret",
+    "tls": false
+  },
+  "privatePort": 10000,
+  "publicPort": 8000,
+  "webPort": 8000
+}
