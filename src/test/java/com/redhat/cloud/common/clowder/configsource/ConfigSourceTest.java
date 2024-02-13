@@ -1,6 +1,9 @@
 package com.redhat.cloud.common.clowder.configsource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.config.ConfigValue;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -18,21 +21,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_JAAS_CONFIG_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SASL_MECHANISM_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SECURITY_PROTOCOL_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SASL_MECHANISM_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SECURITY_PROTOCOL_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
-import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSource.CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
+import static com.redhat.cloud.common.clowder.configsource.ClowderConfigSourceFactory.loadPropertyHandlers;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.CAMEL_KAFKA_SASL_MECHANISM_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.CAMEL_KAFKA_SECURITY_PROTOCOL_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SASL_JAAS_CONFIG_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SASL_MECHANISM_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SECURITY_PROTOCOL_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SSL_TRUSTSTORE_LOCATION_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SSL_TRUSTSTORE_TYPE_KEY;
+import static com.redhat.cloud.common.clowder.configsource.handlers.KafkaSaslClowderPropertyHandler.KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
 import static org.junit.jupiter.api.Assertions.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -65,7 +70,7 @@ public class ConfigSourceTest {
                 );
         }
 
-        ccs = new ClowderConfigSource("target/test-classes/cdappconfig.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ccs = configSourceWithFile("/cdappconfig.json", exposeKafkaSslConfigKeys);
     }
 
     @Test
@@ -82,7 +87,7 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaBootstrapServers() {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig2.json", exposeKafkaSslConfigKeys);
         assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", ccs2.getValue("kafka.bootstrap.servers"));
         assertEquals("ephemeral-host.svc:29092,other-host.svc:39092", ccs2.getValue("camel.component.kafka.brokers"));
     }
@@ -182,7 +187,7 @@ public class ConfigSourceTest {
     void testLogOnEmptyLoggingType() {
         // Tests for a Clowder buggy case where the type is not set
         // for appinterface provider, that in fact sets cloudwatch credentials.
-        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig4.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource source = configSourceWithFile("/cdappconfig4.json", exposeKafkaSslConfigKeys);
         String value = source.getValue("quarkus.log.cloudwatch.access-key-id");
         assertEquals("my-key-id", value);
         value = source.getValue("quarkus.log.cloudwatch.access-key-secret");
@@ -201,26 +206,26 @@ public class ConfigSourceTest {
 
     @Test
     void testLogNullProvider() {
-        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource source = configSourceWithFile("/cdappconfig2.json", exposeKafkaSslConfigKeys);
         String value = source.getValue("quarkus.log.cloudwatch.enabled");
         assertEquals("false", value);
     }
 
     @Test
     void testNoKafkaSection() {
-        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource source = configSourceWithFile("/cdappconfig3.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> source.getValue("kafka.bootstrap.servers"));
     }
 
     @Test
     void testNoLogSection() {
-        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource source = configSourceWithFile("/cdappconfig3.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.log.cloudwatch.region"));
     }
 
     @Test
     void testNoDatabaseSection() {
-        ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig3.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource source = configSourceWithFile("/cdappconfig3.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.datasource.username"));
     }
 
@@ -237,7 +242,7 @@ public class ConfigSourceTest {
 
     @Test
     void testVerifyFullSslMode() throws IOException {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_verify-full_valid.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_verify-full_valid.json", exposeKafkaSslConfigKeys);
 
         String jdbcUrl = ccs2.getValue("quarkus.datasource.jdbc.url");
         verifyUrlAndCertFile(jdbcUrl);
@@ -263,7 +268,7 @@ public class ConfigSourceTest {
 
     @Test
     void testVerifyFullSslModeWithMissingRdsCa() {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_verify-full_invalid.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_verify-full_invalid.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> {
             ccs2.getValue("quarkus.datasource.jdbc.url");
         });
@@ -286,7 +291,7 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaSaslPlainAuthtype() {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_plain_authtype.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_kafka_sasl_plain_authtype.json", false);
         String expJasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"john\" password=\"doe\";";
         assertEquals(expJasConfig, ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertEquals("PLAIN", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
@@ -312,7 +317,7 @@ public class ConfigSourceTest {
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_plain_authtype.json", APP_PROPS_MAP, true);
+        ccs2 = configSourceWithFile("/cdappconfig_kafka_sasl_plain_authtype.json", true);
 
         assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
@@ -329,7 +334,7 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaSaslScramAuthtype() throws IOException {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_scram_authtype.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_kafka_sasl_scram_authtype.json", exposeKafkaSslConfigKeys);
         String expJasConfig = "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"john\" password=\"doe\";";
         assertEquals(expJasConfig, ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertEquals("SCRAM-SHA-512", ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
@@ -359,7 +364,7 @@ public class ConfigSourceTest {
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_sasl_scram_authtype.json", APP_PROPS_MAP, true);
+        ccs2 = configSourceWithFile("/cdappconfig_kafka_sasl_scram_authtype.json", true);
 
         assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
@@ -376,7 +381,7 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaMtlsAuthtype() {
-        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_mtls_authtype.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_kafka_mtls_authtype.json", false);
         assertNull(ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertNull(ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
         assertNull(ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
@@ -401,24 +406,24 @@ public class ConfigSourceTest {
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_mtls_authtype.json", APP_PROPS_MAP, true);
+        ccs2 = configSourceWithFile("/cdappconfig_kafka_mtls_authtype.json", true);
 
-        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
-        assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testKafkaSsl() {
-        final ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_kafka_ssl_sec_type.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
         assertEquals("SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
@@ -443,7 +448,7 @@ public class ConfigSourceTest {
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        final ClowderConfigSource ccs3 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type.json", APP_PROPS_MAP, true);
+        final ClowderConfigSource ccs3 = configSourceWithFile("/cdappconfig_kafka_ssl_sec_type.json", true);
 
         assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
@@ -460,7 +465,7 @@ public class ConfigSourceTest {
 
     @Test
     void testKafkaSslUsingCommonCa() {
-        final ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type_common_ca.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig_kafka_ssl_sec_type_common_ca.json", exposeKafkaSslConfigKeys);
         assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertThrows(IllegalStateException.class, () -> ccs2.getValue(KAFKA_SASL_MECHANISM_KEY));
         assertEquals("SSL", ccs2.getValue(KAFKA_SECURITY_PROTOCOL_KEY));
@@ -485,24 +490,24 @@ public class ConfigSourceTest {
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
         assertFalse(ccs2.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
-        final ClowderConfigSource ccs3 = new ClowderConfigSource("target/test-classes/cdappconfig_kafka_ssl_sec_type_common_ca.json", APP_PROPS_MAP, true);
+        final ClowderConfigSource ccs3 = configSourceWithFile("/cdappconfig_kafka_ssl_sec_type_common_ca.json", true);
 
         assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_JAAS_CONFIG_KEY));
         assertFalse(ccs3.getPropertyNames().contains(KAFKA_SASL_MECHANISM_KEY));
         assertTrue(ccs3.getPropertyNames().contains(KAFKA_SECURITY_PROTOCOL_KEY));
-        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
-        assertFalse(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
 
         assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_JAAS_CONFIG_KEY));
         assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SASL_MECHANISM_KEY));
         assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SECURITY_PROTOCOL_KEY));
-        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
-        assertFalse(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY));
+        assertTrue(ccs3.getPropertyNames().contains(CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY));
     }
 
     @Test
     void testSecuredEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_endpoint.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource cc = configSourceWithFile("/cdappconfig_secured_endpoint.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
 
@@ -522,7 +527,7 @@ public class ConfigSourceTest {
 
     @Test
     void testSecuredEndpointMultipleCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_secured_endpoint_multiple_cert.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource cc = configSourceWithFile("/cdappconfig_secured_endpoint_multiple_cert.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
 
@@ -542,7 +547,7 @@ public class ConfigSourceTest {
 
     @Test
     void testWhenTlsPortIsOff() {
-        ClowderConfigSource cc = new ClowderConfigSource("target/test-classes/cdappconfig_tls_is_off.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        ClowderConfigSource cc = configSourceWithFile("/cdappconfig_tls_is_off.json", exposeKafkaSslConfigKeys);
 
         assertEquals("http://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
         assertNull(cc.getValue("clowder.endpoints.notifications-api.trust-store-path"));
@@ -552,7 +557,7 @@ public class ConfigSourceTest {
 
     @Test
     void singleCertificateParse() throws IOException {
-        String certContent = Files.readString(new File("target/test-classes/cert01.pem").toPath());
+        String certContent = readFile("/cert01.pem");
         List<String> certs = ClowderConfigSource.readCerts(certContent);
 
         assertNotNull(certs);
@@ -562,7 +567,7 @@ public class ConfigSourceTest {
 
     @Test
     void multipleCertificateParse() throws IOException {
-        String certContent = Files.readString(new File("target/test-classes/cert02.pem").toPath());
+        String certContent = readFile("/cert02.pem");
         List<String> certs = ClowderConfigSource.readCerts(certContent);
 
         assertNotNull(certs);
@@ -588,7 +593,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testOptionalEndpointEmptyString() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_missing_endpoints.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_missing_endpoints.json", exposeKafkaSslConfigKeys);
 
         // The returned value should be the empty string.
         assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.url"));
@@ -610,7 +615,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_endpoint.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_endpoint.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://n-api.svc:9999", source.getValue("clowder.optional-endpoints.notifications-api.url"));
 
@@ -635,7 +640,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalEndpointMultipleCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_endpoint_multiple_cert.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_endpoint_multiple_cert.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://n-api.svc:9999", source.getValue("clowder.optional-endpoints.notifications-api.url"));
 
@@ -659,7 +664,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalEndpointEmptyString() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_missing_endpoints.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_missing_endpoints.json", exposeKafkaSslConfigKeys);
 
         assertEquals("", source.getValue("clowder.optional-endpoints.notifications-api.url"));
 
@@ -673,7 +678,7 @@ public class ConfigSourceTest {
      */
     @Test
     void endpointsAndPrivateEndpoints() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig5.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig5.json", exposeKafkaSslConfigKeys);
 
         // Read the regular endpoints.
         assertEquals("http://notifications-api.svc:9876", source.getValue("clowder.endpoints.notifications-api.url"));
@@ -689,7 +694,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testOptionalPrivateEndpointNotExistsConfigurationKey() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig5.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig5.json", exposeKafkaSslConfigKeys);
 
         assertNull(source.getValue("clowder.optional-private-endpoints.non-existent.url"));
     }
@@ -701,7 +706,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredPrivateEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_private_endpoint.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.private-endpoints.notifications-api.url"));
 
@@ -725,7 +730,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredPrivateEndpointMultipleCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint_multiple_cert.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_private_endpoint_multiple_cert.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.private-endpoints.notifications-api.url"));
 
@@ -748,7 +753,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testOptionalPrivateEndpoints() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig5.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig5.json", exposeKafkaSslConfigKeys);
 
         // Read the optional private endpoints.
         assertEquals("http://notifications-engine.svc:5555", source.getValue("clowder.optional-private-endpoints.notifications-engine.url"));
@@ -760,7 +765,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testOptionalPrivateEndpointEmptyString() {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig.json", exposeKafkaSslConfigKeys);
 
         // The returned value should be the empty string.
         assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-engine.url"));
@@ -773,7 +778,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalPrivateEndpoint() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_private_endpoint.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.optional-private-endpoints.notifications-api.url"));
 
@@ -798,7 +803,7 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalPrivateEndpointMultipleCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig_secured_private_endpoint_multiple_cert.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig_secured_private_endpoint_multiple_cert.json", exposeKafkaSslConfigKeys);
 
         assertEquals("https://notifications-api.svc:9876", source.getValue("clowder.optional-private-endpoints.notifications-api.url"));
 
@@ -822,12 +827,35 @@ public class ConfigSourceTest {
      */
     @Test
     void testSecuredOptionalPrivateEndpointEmptyString() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-        final ClowderConfigSource source = new ClowderConfigSource("target/test-classes/cdappconfig.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        final ClowderConfigSource source = configSourceWithFile("/cdappconfig.json", exposeKafkaSslConfigKeys);
 
         assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.url"));
 
         assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-path"));
         assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-password"));
         assertEquals("", source.getValue("clowder.optional-private-endpoints.notifications-api.trust-store-type"));
+    }
+
+    private static ClowderConfigSource configSourceWithFile(String filename, boolean exposeKafkaSslConfigKeys) {
+        String configJson = readFile(filename);
+
+        try {
+            ClowderConfig root = new ObjectMapper().readValue(configJson, ClowderConfig.class);
+            return new ClowderConfigSource(root, new HashMap<>(APP_PROPS_MAP), loadPropertyHandlers(root, exposeKafkaSslConfigKeys));
+        } catch (JsonProcessingException var3) {
+            Assertions.fail("File '" + filename + "' not found!");
+            return null;
+        }
+    }
+
+    private static String readFile(String filename) {
+        InputStream is = ConfigSourceTest.class.getResourceAsStream(filename);
+
+        try {
+            return new String(is.readAllBytes());
+        } catch (IOException ex) {
+            Assertions.fail("File '" + filename + "' not found!");
+            return null;
+        }
     }
 }
