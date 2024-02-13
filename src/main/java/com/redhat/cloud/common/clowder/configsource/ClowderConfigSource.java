@@ -244,7 +244,7 @@ public class ClowderConfigSource implements ConfigSource {
                         case CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
                             return KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
                         default:
-                            throw new IllegalStateException("Unexpected Kafka SASL config key: " + configKey);
+                            throw new IllegalStateException(String.format("Config key: '%s' shouldn't be present for a Kafka SASL configuration, please check your config file", configKey));
                     }
                 } else {
                     Optional<BrokerConfig> sslBroker = root.kafka.brokers.stream()
@@ -254,25 +254,17 @@ public class ClowderConfigSource implements ConfigSource {
                         switch (configKey) {
                             case KAFKA_SECURITY_PROTOCOL_KEY:
                             case CAMEL_KAFKA_SECURITY_PROTOCOL_KEY:
-                                if (saslBroker.isPresent()) {
-                                    return saslBroker.get().sasl.securityProtocol;
-                                } else {
-                                    return sslBroker.get().securityProtocol;
-                                }
+                                return sslBroker.get().securityProtocol;
                             case KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
                             case CAMEL_KAFKA_SSL_TRUSTSTORE_LOCATION_KEY:
-                                if (saslBroker.isPresent()) {
-                                    return createTempKafkaCertFile(saslBroker.get().cacert);
-                                } else {
-                                    return createTempKafkaCertFile(sslBroker.get().cacert);
-                                }
+                                 return createTempKafkaCertFile(sslBroker.get().cacert);
                             case KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
                             case CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
                                 if(null != getValue(KAFKA_SSL_TRUSTSTORE_LOCATION_KEY)) {
                                     return KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
                                 }
                             default:
-                                throw new IllegalStateException("Unexpected Kafka SSL config key: " + configKey);
+                                throw new IllegalStateException(String.format("Config key: '%s' shouldn't be present for a Kafka SSL configuration, please check your config file", configKey));
                        }
                     }
                 }
