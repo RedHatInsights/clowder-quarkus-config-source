@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class FeatureFlagsConfig {
 
     public String hostname;
-    public int port;
+    public Integer port;
     public String clientAccessToken;
     public String scheme;
 }

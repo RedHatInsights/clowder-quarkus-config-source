@@ -440,7 +440,11 @@ public class ClowderConfigSource implements ConfigSource {
                         return root.featureFlags.clientAccessToken;
                     }
                     if (item.equals("url")) {
-                        return String.format("%s://%s:%s", root.featureFlags.scheme, root.featureFlags.hostname, root.featureFlags.port);
+                        String url = String.format("%s://%s", root.featureFlags.scheme, root.featureFlags.hostname);
+                        if (root.featureFlags.port != null) {
+                            url += ":" + root.featureFlags.port;
+                        }
+                        return url;
                     }
                 }
             }
