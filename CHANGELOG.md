@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.4.0...v2.5.0) (2024-02-29)
+
+
+### Features
+
+* Bump Quarkus to 3.7.4 ([#227](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/227)) ([ff3495a](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/ff3495a16682b25330617ac9a2586b5cc08797eb))
+
 ## [2.4.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.3.0...v2.4.0) (2024-02-13)
 
 
