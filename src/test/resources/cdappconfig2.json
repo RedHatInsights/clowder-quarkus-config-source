@@ -54,6 +54,11 @@
     },
     "type": "null"
   },
+  "featureFlags":{
+    "clientAccessToken": "top-secret",
+    "hostname": "localhost",
+    "scheme": "http"
+  },
   "metricsPath": "/metrics",
   "metricsPort": 9000,
   "objectStore": {

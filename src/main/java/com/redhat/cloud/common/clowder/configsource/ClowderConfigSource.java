@@ -89,6 +89,7 @@ public class ClowderConfigSource implements ConfigSource {
     private static final int DEFAULT_PASSWORD_LENGTH = 33;
     private static final Integer PORT_NOT_SET = 0;
     private static final String PROPERTY_DEFAULT = ":";
+    private static final String QUARKUS_UNLEASH = "quarkus.unleash.";
 
     Logger log = Logger.getLogger(getClass().getName());
     private final Map<String, ConfigValue> existingValues;
@@ -427,6 +428,24 @@ public class ClowderConfigSource implements ConfigSource {
                 } catch (IllegalStateException e) {
                     log.errorf("Failed to load config key '%s' from the Clowder configuration: %s", configKey, e.getMessage());
                     throw e;
+                }
+            }
+
+            if (configKey.startsWith(QUARKUS_UNLEASH)) {
+                if (root.featureFlags == null) {
+                    log.warn("Unleash configuration requested by Quarkus but not found the Clowder configuration");
+                } else {
+                    String item = configKey.substring(QUARKUS_UNLEASH.length());
+                    if (item.equals("token")) {
+                        return root.featureFlags.clientAccessToken;
+                    }
+                    if (item.equals("url")) {
+                        String url = String.format("%s://%s", root.featureFlags.scheme, root.featureFlags.hostname);
+                        if (root.featureFlags.port != null) {
+                            url += ":" + root.featureFlags.port;
+                        }
+                        return url;
+                    }
                 }
             }
         }

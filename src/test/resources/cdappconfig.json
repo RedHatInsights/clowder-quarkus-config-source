@@ -66,6 +66,12 @@
     },
     "type": "cloudwatch"
   },
+  "featureFlags":{
+    "clientAccessToken": "top-secret",
+    "hostname": "localhost",
+    "port": 4242,
+    "scheme": "http"
+  },
   "metricsPath": "/metrics",
   "metricsPort": 9000,
   "objectStore": {

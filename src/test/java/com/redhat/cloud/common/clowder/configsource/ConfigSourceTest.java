@@ -179,6 +179,32 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testUnleash() {
+        String token = ccs.getValue("quarkus.unleash.token");
+        assertEquals("top-secret", token);
+        String url = ccs.getValue("quarkus.unleash.url");
+        assertEquals("http://localhost:4242", url);
+    }
+
+    @Test
+    void testUnleashNoPort() {
+        ClowderConfigSource ccs2 = new ClowderConfigSource("target/test-classes/cdappconfig2.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        String token = ccs2.getValue("quarkus.unleash.token");
+        assertEquals("top-secret", token);
+        String url = ccs2.getValue("quarkus.unleash.url");
+        assertEquals("http://localhost", url);
+    }
+
+    @Test
+    void testUnleashNotFound() {
+        ClowderConfigSource ccs3 = new ClowderConfigSource("target/test-classes/cdappconfig3.json", APP_PROPS_MAP, exposeKafkaSslConfigKeys);
+        String token = ccs3.getValue("quarkus.unleash.token");
+        assertNull(token);
+        String url = ccs3.getValue("quarkus.unleash.url");
+        assertNull(url);
+    }
+
+    @Test
     void testLogOnEmptyLoggingType() {
         // Tests for a Clowder buggy case where the type is not set
         // for appinterface provider, that in fact sets cloudwatch credentials.
