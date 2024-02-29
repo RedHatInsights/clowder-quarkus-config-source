@@ -12,6 +12,7 @@ public class ClowderConfig {
     public List<PrivateEndpointConfig> privateEndpoints;
     public KafkaConfig kafka;
     public LoggingConfig logging;
+    public FeatureFlagsConfig featureFlags;
     public String metricsPath;
     public Integer metricsPort;
     public Integer privatePort;
