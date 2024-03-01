@@ -183,7 +183,7 @@ public class ConfigSourceTest {
         String token = ccs.getValue("quarkus.unleash.token");
         assertEquals("top-secret", token);
         String url = ccs.getValue("quarkus.unleash.url");
-        assertEquals("http://localhost:4242", url);
+        assertEquals("http://localhost:4242/api", url);
     }
 
     @Test
@@ -192,7 +192,7 @@ public class ConfigSourceTest {
         String token = ccs2.getValue("quarkus.unleash.token");
         assertEquals("top-secret", token);
         String url = ccs2.getValue("quarkus.unleash.url");
-        assertEquals("http://localhost", url);
+        assertEquals("http://localhost/api", url);
     }
 
     @Test
