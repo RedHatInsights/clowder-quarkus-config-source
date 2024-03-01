@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.5.0...v2.5.1) (2024-03-01)
+
+
+### Bug Fixes
+
+* RHCLOUD-28459 Fix Unleash API URL ([#230](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/230)) ([bacf632](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/bacf632827838557937fb5d7f3a7546d8ad97318))
+
 ## [2.5.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.4.0...v2.5.0) (2024-02-29)
 
 
