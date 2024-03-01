@@ -444,6 +444,7 @@ public class ClowderConfigSource implements ConfigSource {
                         if (root.featureFlags.port != null) {
                             url += ":" + root.featureFlags.port;
                         }
+                        url += "/api";
                         return url;
                     }
                 }
