@@ -881,7 +881,7 @@ public class ConfigSourceTest {
         InputStream is = ConfigSourceTest.class.getResourceAsStream(filename);
 
         try {
-            return new String(is.readAllBytes());
+            return new String(is.readAllBytes(), UTF_8);
         } catch (IOException ex) {
             Assertions.fail("File '" + filename + "' not found!");
             return null;
