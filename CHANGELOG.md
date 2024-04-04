@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.5.1...v2.6.0) (2024-04-04)
+
+
+### Features
+
+* Refactor config source to not keep in memory all the properties ([#218](https://github.com/RedHatInsights/clowder-quarkus-config-source/pull/218)) ([318e4b8](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/318e4b82c3fcc10ffda22fc496bc5dd681535758))
+
 ## [2.5.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.5.0...v2.5.1) (2024-03-01)
 
 
