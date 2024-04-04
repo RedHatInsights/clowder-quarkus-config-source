@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ConfigSourceTest {
 
@@ -872,7 +873,7 @@ public class ConfigSourceTest {
             ClowderConfig root = new ObjectMapper().readValue(configJson, ClowderConfig.class);
             return new ClowderConfigSource(root, new HashMap<>(APP_PROPS_MAP), loadPropertyHandlers(root, exposeKafkaSslConfigKeys));
         } catch (JsonProcessingException var3) {
-            Assertions.fail("File '" + filename + "' not found!");
+            fail("File '" + filename + "' not found!");
             return null;
         }
     }
@@ -883,7 +884,7 @@ public class ConfigSourceTest {
         try {
             return new String(is.readAllBytes(), UTF_8);
         } catch (IOException ex) {
-            Assertions.fail("Error reading '" + filename + "'", ex);
+            fail("Error reading '" + filename + "'", ex);
             return null;
         }
     }
