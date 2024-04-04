@@ -49,7 +49,7 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
         }
 
         File clowderConfigFile = new File(clowderConfig);
-        if (!clowderConfigFile.exists()) {
+        if (!clowderConfigFile.canRead()) {
             LOG.warn("Can't read clowder config from " + clowderConfigFile.getAbsolutePath() + ", not doing translations.");
             return List.of();
         }
