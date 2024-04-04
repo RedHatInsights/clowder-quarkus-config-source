@@ -5,7 +5,7 @@
 
 ### Features
 
-* Trigger a new release ([#241](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/241)) ([3c71b99](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/3c71b99f7404f72e236ed89fbb1637319b1155c0))
+* Refactor config source to not keep in memory all the properties ([#218](https://github.com/RedHatInsights/clowder-quarkus-config-source/pull/218)) ([318e4b8](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/318e4b82c3fcc10ffda22fc496bc5dd681535758))
 
 ## [2.5.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.5.0...v2.5.1) (2024-03-01)
 
