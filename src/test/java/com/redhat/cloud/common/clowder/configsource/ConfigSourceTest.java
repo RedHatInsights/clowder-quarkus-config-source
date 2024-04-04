@@ -883,7 +883,7 @@ public class ConfigSourceTest {
         try {
             return new String(is.readAllBytes(), UTF_8);
         } catch (IOException ex) {
-            Assertions.fail("File '" + filename + "' not found!");
+            Assertions.fail("Error reading '" + filename + "'", ex);
             return null;
         }
     }

@@ -121,11 +121,6 @@ public class KafkaSecurityClowderPropertyHandler extends ClowderPropertyHandler 
             case CAMEL_KAFKA_SSL_TRUSTSTORE_TYPE_KEY:
                 return KAFKA_SSL_TRUSTSTORE_TYPE_VALUE;
             default:
-                // if it's a ssl key too, let's try using the Kafka SSL configuration
-                if (KAFKA_SSL_KEYS.contains(property) && sslBroker.isPresent()) {
-                    return handleKafkaSslKey(property, configSource);
-                }
-
                 throw new IllegalStateException(String.format("Config key: '%s' shouldn't be present for a Kafka SASL configuration, please check your config file", property));
         }
     }
