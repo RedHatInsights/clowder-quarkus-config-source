@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.6.0...v2.6.1) (2024-04-09)
+
+
+### Bug Fixes
+
+* null pointer exception when attempting to read a system property ([#245](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/245)) ([e5191e4](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/e5191e453476374e9d0624bf277b4e163c908348))
+
 ## [2.6.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.5.1...v2.6.0) (2024-04-04)
 
 
