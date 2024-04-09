@@ -115,6 +115,12 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testKafkaOutgoingWithSystemPropertyThatDoesNotExist() {
+        String topic = ccs.getValue("mp.messaging.outgoing.system.not.exist.topic");
+        assertEquals("${NO_EXIST}", topic);
+    }
+
+    @Test
     void testKafkaOutgoingWithNestedSystemProperty() {
         String topic = ccs.getValue("mp.messaging.outgoing.nested-properties.topic");
         assertEquals("platform-nested-properties", topic);

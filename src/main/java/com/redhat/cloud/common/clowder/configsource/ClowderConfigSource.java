@@ -257,7 +257,7 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     private String resolveValue(String property) {
-        if (!hasComputedProperties(property)) {
+        if (property == null || property.isEmpty() || !hasComputedProperties(property)) {
             return property;
         }
 
@@ -282,7 +282,9 @@ public class ClowderConfigSource implements ConfigSource {
                 value = getPropertyFromSystem(systemProperty, value);
             }
 
-            property = property.replace(PROPERTY_START + rawSystemProperty + PROPERTY_END, value);
+            if (value != null) {
+                property = property.replace(PROPERTY_START + rawSystemProperty + PROPERTY_END, value);
+            }
         }
 
         return property;
