@@ -3,7 +3,6 @@ package com.redhat.cloud.common.clowder.configsource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.config.ConfigValue;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +46,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ConfigSourceTest {
 
-    private static final Pattern VERIFY_FULL_URL_PATTERN = Pattern.compile("(jdbc:(tracing:|otel:)?)?postgresql://some.host:15432/some-db\\?sslmode=verify-full&sslrootcert=(.+rds-ca-root.+\\.crt)");
+    private static final Pattern VERIFY_FULL_URL_PATTERN =
+        Pattern.compile("(jdbc:(tracing:|otel:)?)?postgresql://some.host:15432/some-db\\?" +
+        "ApplicationName=test-app&sslmode=verify-full&sslrootcert=(.+rds-ca-root.+\\.crt)");
     private static final String EXPECTED_CERT = "Dummy value";
     private static final Map<String, ConfigValue> APP_PROPS_MAP = new HashMap<>();
     private static final Properties APP_PROPS = new Properties();
@@ -154,7 +155,7 @@ public class ConfigSourceTest {
         if (((String) APP_PROPS.get("quarkus.datasource.jdbc.url")).contains("tracing")) {
             expected += ":tracing";
         }
-        expected += ":postgresql://some.host:15432/some-db?sslmode=require";
+        expected += ":postgresql://some.host:15432/some-db?ApplicationName=test-app&sslmode=require";
 
         assertEquals(expected, url );
     }

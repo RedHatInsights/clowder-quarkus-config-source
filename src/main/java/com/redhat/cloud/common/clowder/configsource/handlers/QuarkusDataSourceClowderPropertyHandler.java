@@ -4,6 +4,10 @@ import com.redhat.cloud.common.clowder.configsource.ClowderConfig;
 import com.redhat.cloud.common.clowder.configsource.ClowderConfigSource;
 import com.redhat.cloud.common.clowder.configsource.DatabaseConfig;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.LinkedHashMap;
+
 import static com.redhat.cloud.common.clowder.configsource.utils.CertUtils.createTempCertFile;
 
 public class QuarkusDataSourceClowderPropertyHandler extends ClowderPropertyHandler {
@@ -42,7 +46,14 @@ public class QuarkusDataSourceClowderPropertyHandler extends ClowderPropertyHand
             String hostPortDb = getHostPortDb(clowderConfig.database);
             String tracing = "";
             String jdbcUrl = configSource.getExistingValue(QUARKUS_DATASOURCE_JDBC_URL);
+            Map<String, String> params = new LinkedHashMap<>();
+
             if (jdbcUrl != null) {
+                if(jdbcUrl.contains("?")) {
+                    String hook = jdbcUrl.split("\\?")[1];
+                    Arrays.asList(hook.split("&")).stream()
+                        .forEach(x -> params.put(x.split("=")[0], x.split("=")[1]));
+                }
                 if (jdbcUrl.contains(":tracing:")) {
                     // TODO Remove this block (tracing) later.
                     configSource.getLogger().warn("The support of OpenTracing in this library is deprecated and will be removed soon. Please consider switching to OpenTelemetry.");
@@ -59,10 +70,16 @@ public class QuarkusDataSourceClowderPropertyHandler extends ClowderPropertyHand
 
             jdbcUrl = String.format("jdbc:%s%s", tracing, hostPortDb);
             if (useSsl) {
-                jdbcUrl = jdbcUrl + "?sslmode=" + sslMode;
+                params.put("sslmode", sslMode);
             }
             if (verifyFull) {
-                jdbcUrl = jdbcUrl + "&sslrootcert=" + createTempRdsCertFile(clowderConfig.database.rdsCa);
+                params.put("sslrootcert", createTempRdsCertFile(clowderConfig.database.rdsCa));
+            }
+            if (!params.isEmpty()) {
+                StringBuilder builder = new StringBuilder();
+                params.keySet().forEach(x -> builder.append(String.format("%s=%s&", x, params.get(x))));
+                builder.setLength(builder.length() - 1);
+                jdbcUrl = String.format("%s?%s", jdbcUrl, builder);
             }
             return jdbcUrl;
         }
