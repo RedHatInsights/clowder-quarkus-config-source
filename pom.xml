@@ -17,7 +17,7 @@
     <java.release>17</java.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <quarkus.version>3.13.2</quarkus.version>
-    <surefire-plugin.version>3.4.0</surefire-plugin.version>
+    <surefire-plugin.version>3.5.1</surefire-plugin.version>
   </properties>
 
   <licenses>
