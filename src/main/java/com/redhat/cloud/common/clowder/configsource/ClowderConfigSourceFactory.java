@@ -11,6 +11,7 @@ import com.redhat.cloud.common.clowder.configsource.handlers.OptionalPrivateEndp
 import com.redhat.cloud.common.clowder.configsource.handlers.PrivateEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusDataSourceClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusLogCloudWatchClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusRedisClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusUnleashClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.WebPortClowderPropertyHandler;
 import io.smallrye.config.ConfigSourceContext;
@@ -76,7 +77,8 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
                 new OptionalPrivateEndpointsClowderPropertyHandler(root),
                 new PrivateEndpointsClowderPropertyHandler(root),
                 new MicroprofileMessagingClowderPropertyHandler(root),
-                new QuarkusUnleashClowderPropertyHandler(root));
+                new QuarkusUnleashClowderPropertyHandler(root),
+                new QuarkusRedisClowderPropertyHandler(root));
     }
 
     private static List<ConfigSource> loadClowderConfigFromFile(ConfigSourceContext configSourceContext, File clowderConfigFile) {
