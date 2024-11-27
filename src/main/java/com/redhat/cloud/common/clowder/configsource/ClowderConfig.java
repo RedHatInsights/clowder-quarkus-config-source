@@ -8,6 +8,7 @@ import java.util.List;
 public class ClowderConfig {
 
     public DatabaseConfig database;
+    public InMemoryDb inMemoryDb;
     public List<EndpointConfig> endpoints;
     public List<PrivateEndpointConfig> privateEndpoints;
     public KafkaConfig kafka;

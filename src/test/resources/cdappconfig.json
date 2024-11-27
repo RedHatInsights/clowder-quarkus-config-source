@@ -9,6 +9,10 @@
     "sslMode": "require",
     "username": "aUser"
   },
+  "inMemoryDb": {
+    "hostname": "some.redis.host",
+    "port": 6379
+  },
   "endpoints": [
     {
       "app": "notifications",
