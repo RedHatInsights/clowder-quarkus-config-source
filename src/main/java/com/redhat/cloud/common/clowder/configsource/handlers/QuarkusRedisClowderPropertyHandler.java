@@ -24,8 +24,8 @@ public class QuarkusRedisClowderPropertyHandler extends ClowderPropertyHandler {
         String sub = property.substring(QUARKUS_REDIS.length());
 
         return switch (sub) {
-            case "hosts" -> "redis://" + clowderConfig.inMemoryDb.hostname + ":" + clowderConfig.inMemoryDb.port;
-            case "password" ->
+            case "host-uri" -> "redis://" + clowderConfig.inMemoryDb.hostname + ":" + clowderConfig.inMemoryDb.port;
+            case "pass" ->
                     clowderConfig.inMemoryDb.password;
             default ->
                     configSource.getExistingValue(property); // fallback to fetching the value from application.properties
