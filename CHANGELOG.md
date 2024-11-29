@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.6.1...v2.7.0) (2024-11-29)
+
+
+### Features
+
+* release QuarkusRedisClowderPropertyHandler ([#293](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/293)) ([901727c](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/901727c8bccb094e71b4944d25022d065b91cb94))
+
 ## [2.6.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.6.0...v2.6.1) (2024-04-09)
 
 
