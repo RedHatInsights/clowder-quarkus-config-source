@@ -179,7 +179,7 @@ public class ConfigSourceTest {
     void testInMemoryDbWithCredentials() {
         ClowderConfigSource ccs2 = configSourceWithFile("/cdappconfig2.json", exposeKafkaSslConfigKeys);
         String hosts = ccs2.getValue("quarkus.redis.hosts");
-        assertEquals("redis://some.redis.db:6379", hosts);
+        assertEquals("rediss://some.redis.db:6379", hosts);
 
         String password = ccs2.getValue("quarkus.redis.password");
         assertEquals("secret", password);
