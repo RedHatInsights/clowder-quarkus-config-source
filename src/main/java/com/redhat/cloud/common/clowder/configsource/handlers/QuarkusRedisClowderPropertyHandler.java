@@ -24,9 +24,12 @@ public class QuarkusRedisClowderPropertyHandler extends ClowderPropertyHandler {
         String sub = property.substring(QUARKUS_REDIS.length());
 
         return switch (sub) {
-            case "hosts" -> "redis://" + clowderConfig.inMemoryDb.hostname + ":" + clowderConfig.inMemoryDb.port;
-            case "password" ->
-                    clowderConfig.inMemoryDb.password;
+            case "hosts" -> {
+                // If password is provided by cdappconfig.json, in-transit encryption is enabled (see clowder#1126).
+                String scheme = clowderConfig.inMemoryDb.password != null && !clowderConfig.inMemoryDb.password.isBlank() ? "rediss://" : "redis://";
+                yield scheme + clowderConfig.inMemoryDb.hostname + ":" + clowderConfig.inMemoryDb.port;
+            }
+            case "password" -> clowderConfig.inMemoryDb.password;
             default ->
                     configSource.getExistingValue(property); // fallback to fetching the value from application.properties
         };
