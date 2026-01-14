@@ -1,6 +1,7 @@
 package com.redhat.cloud.common.clowder.configsource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.config.ConfigValue;
 import org.junit.jupiter.api.BeforeAll;
@@ -899,7 +900,10 @@ public class ConfigSourceTest {
         String configJson = readFile(filename);
 
         try {
-            ClowderConfig root = new ObjectMapper().readValue(configJson, ClowderConfig.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ClowderConfig root = objectMapper.readValue(configJson, ClowderConfig.class);
+
             return new ClowderConfigSource(root, new HashMap<>(APP_PROPS_MAP), loadPropertyHandlers(root, exposeKafkaSslConfigKeys));
         } catch (JsonProcessingException var3) {
             fail("File '" + filename + "' not found!");

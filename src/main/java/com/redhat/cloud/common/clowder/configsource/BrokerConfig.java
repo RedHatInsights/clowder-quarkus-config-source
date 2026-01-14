@@ -1,8 +1,8 @@
 package com.redhat.cloud.common.clowder.configsource;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@RegisterForReflection
 public class BrokerConfig {
 
     public String hostname;
