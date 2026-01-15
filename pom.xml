@@ -18,6 +18,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <quarkus.version>3.17.2</quarkus.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
+    <javadoc.plugin.version>3.12.0</javadoc.plugin.version>
+    <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+    <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
   </properties>
 
   <licenses>
@@ -126,13 +129,14 @@
   </build>
   <profiles>
     <profile>
+      <!-- Releasing profile -->
       <id>release</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.12.0</version>
+            <version>${javadoc.plugin.version}</version>
             <configuration>
               <failOnError>false</failOnError>
             </configuration>
@@ -149,7 +153,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.1</version>
+            <version>3.4.0</version>
             <executions>
               <execution>
                 <id>attach-sources</id>
@@ -159,39 +163,42 @@
               </execution>
             </executions>
           </plugin>
-
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-release-plugin</artifactId>
-            <version>3.3.1</version>
-            <configuration>
-              <tagNameFormat>v@{project.version}</tagNameFormat>
-            </configuration>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.8</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <keyname>${gpg.keyname}</keyname>
+                  <passphrase>${gpg.passphrase}</passphrase>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
-
-          <!-- auto release -->
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.7.0</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>jboss.staging</serverId>
-              <nexusUrl> https://repository.jboss.org/nexus/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
-
         </plugins>
       </build>
     </profile>
-
   </profiles>
+
 
   <distributionManagement>
     <repository>
-      <id>jboss.staging</id>
-      <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2</url>
+      <id>nexus</id>
+      <url>https://repository.jboss.org/nexus/repository/platform-integrations/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </distributionManagement>
 
