@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.8.0...v2.8.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* add PGP signature ([#332](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/332)) ([4797f27](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/4797f27f9fa14287b16e47e13c0874cd7b28d04d))
+
 ## [2.8.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.7.1...v2.8.0) (2026-01-15)
 
 
