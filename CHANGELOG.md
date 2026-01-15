@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.7.1...v2.8.0) (2026-01-15)
+
+
+### Features
+
+* Start release ([#329](https://github.com/RedHatInsights/clowder-quarkus-config-source/issues/329)) ([ead229f](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/ead229f3ec4cb6f23f4b12e9e3afcc10cb1e9ba2))
+
 ## [2.7.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.7.0...v2.7.1) (2025-01-31)
 
 
