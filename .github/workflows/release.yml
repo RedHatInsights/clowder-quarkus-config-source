@@ -11,7 +11,7 @@ jobs:
       pr: ${{ steps.release.outputs.pr }}
     steps:
       - id: release
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
           release-type: maven
           package-name: com.redhat.cloud.common.clowder-quarkus-config-source
@@ -34,19 +34,28 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.release.outputs.release_created }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Set up Maven Central Repository
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: adopt
-          server-id: jboss.staging
+          server-id: nexus
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "Available GPG keys:"
+          gpg --list-secret-keys --keyid-format=long
+          echo "Key ID from secret: ${{ secrets.GPG_KEY_ID }}"
+          echo "Testing key access:"
+          gpg --list-secret-keys "${{ secrets.GPG_KEY_ID }}" || echo "Key not found with ID: ${{ secrets.GPG_KEY_ID }}"
+
       - name: Publish package
-        run: mvn --batch-mode javadoc:jar source:jar deploy
+        run: mvn deploy -Prelease -Dgpg.keyname="${{ secrets.GPG_KEY_ID }}" -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
