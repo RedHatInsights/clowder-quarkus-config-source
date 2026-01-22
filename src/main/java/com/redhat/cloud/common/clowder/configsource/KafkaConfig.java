@@ -1,10 +1,10 @@
 package com.redhat.cloud.common.clowder.configsource;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.util.List;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@RegisterForReflection
 public class KafkaConfig {
 
     public List<BrokerConfig> brokers;

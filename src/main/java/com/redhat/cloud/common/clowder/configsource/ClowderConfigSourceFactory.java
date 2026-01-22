@@ -1,5 +1,6 @@
 package com.redhat.cloud.common.clowder.configsource;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.cloud.common.clowder.configsource.handlers.ClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.EndpointsClowderPropertyHandler;
@@ -91,7 +92,9 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
 
         try {
             String configJson = Files.readString(clowderConfigFile.toPath());
-            ClowderConfig root = new ObjectMapper().readValue(configJson, ClowderConfig.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            ClowderConfig root = objectMapper.readValue(configJson, ClowderConfig.class);
 
             LOG.info("Exposing Kafka config keys: " + exposeKafkaSslConfigKeys);
             List<ClowderPropertyHandler> handlers = loadPropertyHandlers(root, exposeKafkaSslConfigKeys);
