@@ -16,7 +16,7 @@
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <java.release>17</java.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <quarkus.version>3.17.2</quarkus.version>
+    <quarkus.version>3.31.0</quarkus.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
     <javadoc.plugin.version>3.12.0</javadoc.plugin.version>
     <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
