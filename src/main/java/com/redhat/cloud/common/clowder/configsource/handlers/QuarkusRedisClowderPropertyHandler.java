@@ -18,7 +18,8 @@ public class QuarkusRedisClowderPropertyHandler extends ClowderPropertyHandler {
     @Override
     public String handle(String property, ClowderConfigSource configSource) {
         if (clowderConfig.inMemoryDb == null) {
-            throw new IllegalStateException("No inMemoryDb section found");
+            configSource.getLogger().warnf("No inMemoryDb section found in Clowder configuration, fallback to existing value for \"%s\" configuration key.", property);
+            return configSource.getExistingValue(property);
         }
 
         String sub = property.substring(QUARKUS_REDIS.length());

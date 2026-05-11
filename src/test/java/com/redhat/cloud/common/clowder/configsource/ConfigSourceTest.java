@@ -286,7 +286,10 @@ public class ConfigSourceTest {
     @Test
     void testNoInMemoryDbSection() {
         ClowderConfigSource source = configSourceWithFile("/cdappconfig3.json", exposeKafkaSslConfigKeys);
-        assertThrows(IllegalStateException.class, () -> source.getValue("quarkus.redis.hosts"));
+        String hosts = source.getValue("quarkus.redis.hosts");
+        assertNull(hosts);
+        String password = source.getValue("quarkus.redis.password");
+        assertNull(password);
     }
 
     @Test
