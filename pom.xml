@@ -93,9 +93,9 @@
     <plugins>
       <!-- jandex is needed for @RegisterForReflection annotation to work properly (native mode support) -->
       <plugin>
-        <groupId>org.jboss.jandex</groupId>
+        <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
-        <version>1.2.3</version>
+        <version>3.5.3</version>
         <executions>
           <execution>
             <id>make-index</id>
