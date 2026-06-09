@@ -6,6 +6,9 @@ name: release
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       pr: ${{ steps.release.outputs.pr }}
@@ -14,7 +17,6 @@ jobs:
         uses: googleapis/release-please-action@v5
         with:
           release-type: maven
-          package-name: com.redhat.cloud.common.clowder-quarkus-config-source
   auto-merge-snapshot:
     needs: [ release ]
     runs-on: ubuntu-latest
