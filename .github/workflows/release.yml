@@ -4,41 +4,64 @@ on:
       - main
 name: release
 jobs:
-  release:
+  prepare-release:
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-prepare-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      pr: ${{ steps.release.outputs.pr }}
+      release_created: ${{ steps.prepare.outputs.release_created }}
+      version: ${{ steps.prepare.outputs.version }}
+      pr_url: ${{ steps.prepare.outputs.pr_url }}
     steps:
-      - id: release
-        uses: googleapis/release-please-action@v5
+      - uses: actions/checkout@v6
         with:
-          release-type: maven
-  auto-merge-snapshot:
-    needs: [ release ]
+          fetch-depth: 0
+      - id: prepare
+        name: Compute next version and open/recognize the release PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BOT_GPG_PRIVATE_KEY: ${{ secrets.RELEASE_BOT_GPG_PRIVATE_KEY }}
+          RELEASE_BOT_GPG_PASSPHRASE: ${{ secrets.RELEASE_BOT_GPG_PASSPHRASE }}
+          RELEASE_BOT_NAME: ${{ secrets.RELEASE_BOT_NAME }}
+          RELEASE_BOT_EMAIL: ${{ secrets.RELEASE_BOT_EMAIL }}
+        run: bash .github/scripts/prepare-release.sh
+  auto-merge-release:
+    needs: [ prepare-release ]
     runs-on: ubuntu-latest
-    if: "${{ needs.release.outputs.pr && contains(fromJSON(needs.release.outputs.pr).labels, 'autorelease: snapshot') }}"
+    if: "${{ needs.prepare-release.outputs.pr_url != '' }}"
     steps:
       - id: auto-merge
         uses: "pascalgn/automerge-action@v0.16.4"
         env:
-          MERGE_LABELS: "autorelease: snapshot"
-          MERGE_METHOD: rebase
+          MERGE_LABELS: "autorelease: pending"
+          MERGE_METHOD: squash
+          MERGE_COMMIT_MESSAGE: pull-request-title
           MERGE_RETRIES: 10
           MERGE_RETRY_SLEEP: 10000
-          PULL_REQUEST: ${{ fromJSON(needs.release.outputs.pr).number }}
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   publish:
-    needs: [ release ]
+    needs: [ prepare-release ]
     runs-on: ubuntu-latest
-    if: ${{ needs.release.outputs.release_created }}
+    if: ${{ needs.prepare-release.outputs.release_created == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: true
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ needs.prepare-release.outputs.version }}
+        run: |
+          if gh release view "v${RELEASE_VERSION}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "Release v${RELEASE_VERSION} already exists, skipping creation."
+          else
+            gh release create "v${RELEASE_VERSION}" --repo "${{ github.repository }}" --title "v${RELEASE_VERSION}" --target "${{ github.sha }}" --generate-notes
+          fi
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v5
         with:
@@ -48,16 +71,21 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          printenv GPG_PRIVATE_KEY | gpg --batch --import
           echo "Available GPG keys:"
           gpg --list-secret-keys --keyid-format=long
-          echo "Key ID from secret: ${{ secrets.GPG_KEY_ID }}"
+          echo "Key ID from secret: ${GPG_KEY_ID}"
           echo "Testing key access:"
-          gpg --list-secret-keys "${{ secrets.GPG_KEY_ID }}" || echo "Key not found with ID: ${{ secrets.GPG_KEY_ID }}"
-
+          gpg --list-secret-keys "${GPG_KEY_ID}" || echo "Key not found with ID: ${GPG_KEY_ID}"
       - name: Publish package
-        run: mvn deploy -Prelease -Dgpg.keyname="${{ secrets.GPG_KEY_ID }}" -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
         env:
+          RELEASE_VERSION: ${{ needs.prepare-release.outputs.version }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          GPG_KEYNAME: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn deploy -Prelease -Drevision="${RELEASE_VERSION}"
