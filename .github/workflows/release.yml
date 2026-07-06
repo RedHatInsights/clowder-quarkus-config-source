@@ -3,12 +3,12 @@ on:
     branches:
       - main
 name: release
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   prepare-release:
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-prepare-${{ github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write
@@ -52,6 +52,16 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: true
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ needs.prepare-release.outputs.version }}
+        run: |
+          if gh release view "v${RELEASE_VERSION}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "Release v${RELEASE_VERSION} already exists, skipping creation."
+          else
+            gh release create "v${RELEASE_VERSION}" --repo "${{ github.repository }}" --title "v${RELEASE_VERSION}" --target "${{ github.sha }}" --generate-notes
+          fi
       - name: Set up Maven Central Repository
         uses: actions/setup-java@v5
         with:
@@ -74,8 +84,3 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
         run: mvn deploy -Prelease -Drevision="${RELEASE_VERSION}" -Dgpg.keyname="${{ secrets.GPG_KEY_ID }}" -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}"
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_VERSION: ${{ needs.prepare-release.outputs.version }}
-        run: gh release create "v${RELEASE_VERSION}" --repo "${{ github.repository }}" --title "v${RELEASE_VERSION}" --target "${{ github.sha }}" --generate-notes

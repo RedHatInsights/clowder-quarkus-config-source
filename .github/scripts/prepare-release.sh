@@ -10,12 +10,17 @@
 # GitHub's REST/Git-Data API by a plain GITHUB_TOKEN.
 set -euo pipefail
 
+RELEASE_SUBJECT_PREFIX="chore(main): release"
+
 LAST_SUBJECT=$(git log -1 --pretty=%s)
-if [[ "${LAST_SUBJECT}" =~ ^chore\(main\):\ release\ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-  echo "HEAD is already a release commit for ${BASH_REMATCH[1]}, nothing to prepare."
-  echo "release_created=true" >>"${GITHUB_OUTPUT}"
-  echo "version=${BASH_REMATCH[1]}" >>"${GITHUB_OUTPUT}"
-  exit 0
+if [[ "${LAST_SUBJECT}" == "${RELEASE_SUBJECT_PREFIX} "* ]]; then
+  VERSION_PART="${LAST_SUBJECT#"${RELEASE_SUBJECT_PREFIX} "}"
+  if [[ "${VERSION_PART}" =~ ^([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+    echo "HEAD is already a release commit for ${BASH_REMATCH[1]}, nothing to prepare."
+    echo "release_created=true" >>"${GITHUB_OUTPUT}"
+    echo "version=${BASH_REMATCH[1]}" >>"${GITHUB_OUTPUT}"
+    exit 0
+  fi
 fi
 
 LATEST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -n1)
@@ -112,10 +117,19 @@ if [ -z "${KEY_FINGERPRINT}" ]; then
   exit 1
 fi
 
+cleanup() {
+  gpg --batch --yes --delete-secret-and-public-key "${KEY_FINGERPRINT}" >/dev/null 2>&1 || true
+  gpgconf --kill gpg-agent || true
+  rm -rf ~/.gnupg
+  git config --unset user.signingkey || true
+  git config --unset commit.gpgsign || true
+}
+trap cleanup EXIT
+
 echo "allow-preset-passphrase" >>~/.gnupg/gpg-agent.conf
 gpg-connect-agent reloadagent /bye
 KEYGRIP=$(gpg --list-secret-keys --with-keygrip --with-colons 2>/dev/null | awk -F: '/^grp/{print $10; exit}')
-if ! /usr/lib/gnupg/gpg-preset-passphrase --preset "${KEYGRIP}" <<<"${RELEASE_BOT_GPG_PASSPHRASE}"; then
+if ! printenv RELEASE_BOT_GPG_PASSPHRASE | /usr/lib/gnupg/gpg-preset-passphrase --preset "${KEYGRIP}"; then
   echo "Error: failed to preset GPG passphrase." >&2
   exit 1
 fi
@@ -127,23 +141,17 @@ git config user.email "${RELEASE_BOT_EMAIL}"
 
 git checkout -b "${BRANCH}"
 git add pom.xml CHANGELOG.md
-git commit -S -m "chore(main): release ${NEW_VERSION}"
+git commit -S -m "${RELEASE_SUBJECT_PREFIX} ${NEW_VERSION}"
 git push origin "${BRANCH}"
 
 gh label create "autorelease: pending" --color BFD4F2 --description "Automated release PR, ready to auto-merge" --force
 
 PR_URL=$(gh pr create \
-  --title "chore(main): release ${NEW_VERSION}" \
+  --title "${RELEASE_SUBJECT_PREFIX} ${NEW_VERSION}" \
   --body "Automated release PR for v${NEW_VERSION}. Auto-merges once opened." \
   --base main \
   --head "${BRANCH}" \
   --label "autorelease: pending")
-
-gpg --batch --yes --delete-secret-and-public-key "${KEY_FINGERPRINT}" || true
-gpgconf --kill gpg-agent || true
-rm -rf ~/.gnupg
-git config --unset user.signingkey || true
-git config --unset commit.gpgsign || true
 
 echo "release_created=false" >>"${GITHUB_OUTPUT}"
 echo "pr_url=${PR_URL}" >>"${GITHUB_OUTPUT}"
