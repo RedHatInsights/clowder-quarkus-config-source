@@ -4,7 +4,7 @@
 
   <groupId>com.redhat.cloud.common</groupId>
   <artifactId>clowder-quarkus-config-source</artifactId>
-  <version>2.10.1-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>jar</packaging>
 
   <name>Clowder Quarkus Config Source</name>
@@ -12,6 +12,7 @@
   <url>https://github.com/RedHatInsights/clowder-quarkus-config-source</url>
 
   <properties>
+    <revision>2.10.1-SNAPSHOT</revision>
     <compiler-plugin.version>3.15.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <java.release>17</java.release>
@@ -143,6 +144,30 @@
             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
           </systemProperties>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.7.0</version>
+        <configuration>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
