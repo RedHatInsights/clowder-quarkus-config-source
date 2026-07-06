@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.11.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.10.0...v2.11.0)
+
+### Features
+
+* feat: release clowder-quarkus-config-source (#374) ([c4f67d3](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/c4f67d34aefa44148561a6deb62287526b22224e))
+
+### Bug Fixes
+
+* fix: update release please breaking changes (#375) ([bc005fd](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/bc005fdf0d9cb6ad5a8db81b1902fc8e333893bc))
+
+
 ## [2.10.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.9.1...v2.10.0) (2026-05-15)
 
 
