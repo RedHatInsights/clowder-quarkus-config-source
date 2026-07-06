@@ -11,7 +11,7 @@
 set -euo pipefail
 
 LAST_SUBJECT=$(git log -1 --pretty=%s)
-if [[ "${LAST_SUBJECT}" =~ ^chore\(main\):\ release\ (.+)$ ]]; then
+if [[ "${LAST_SUBJECT}" =~ ^chore\(main\):\ release\ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
   echo "HEAD is already a release commit for ${BASH_REMATCH[1]}, nothing to prepare."
   echo "release_created=true" >>"${GITHUB_OUTPUT}"
   echo "version=${BASH_REMATCH[1]}" >>"${GITHUB_OUTPUT}"
@@ -53,6 +53,21 @@ case "${BUMP}" in
 esac
 NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 echo "Bumping ${LATEST_TAG} -> v${NEW_VERSION} (${BUMP})"
+
+BRANCH="release/v${NEW_VERSION}"
+
+EXISTING_PR_URL=$(gh pr list --head "${BRANCH}" --base main --state open --json url --jq '.[0].url // empty')
+if [ -n "${EXISTING_PR_URL}" ]; then
+  echo "Release PR for ${BRANCH} already exists, reusing ${EXISTING_PR_URL}."
+  echo "release_created=false" >>"${GITHUB_OUTPUT}"
+  echo "pr_url=${EXISTING_PR_URL}" >>"${GITHUB_OUTPUT}"
+  exit 0
+fi
+
+if git ls-remote --exit-code --heads origin "${BRANCH}" >/dev/null 2>&1; then
+  echo "Stale branch ${BRANCH} with no open PR found, deleting before recreating."
+  git push origin --delete "${BRANCH}"
+fi
 
 ./mvnw -q -B versions:set-property -Dproperty=revision -DnewVersion="${NEW_VERSION}" -DgenerateBackupPoms=false
 
@@ -110,7 +125,6 @@ git config commit.gpgsign true
 git config user.name "${RELEASE_BOT_NAME}"
 git config user.email "${RELEASE_BOT_EMAIL}"
 
-BRANCH="release/v${NEW_VERSION}"
 git checkout -b "${BRANCH}"
 git add pom.xml CHANGELOG.md
 git commit -S -m "chore(main): release ${NEW_VERSION}"
