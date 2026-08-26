@@ -72,6 +72,17 @@
       <groupId>io.smallrye.config</groupId>
       <artifactId>smallrye-config</artifactId>
     </dependency>
+    <!--
+      BouncyCastle provides X.509 parsing support for post-quantum signature
+      algorithms (e.g. ML-DSA / NIST FIPS 204) whose OIDs are not registered by
+      the JDK security providers before Java 24. It is used as a fallback in
+      ClowderConfigSource#buildX509Cert when the default provider cannot parse a
+      certificate. See ENGPROD-10262.
+    -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-core</artifactId>

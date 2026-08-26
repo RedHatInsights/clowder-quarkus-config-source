@@ -608,6 +608,33 @@ public class ConfigSourceTest {
         assertEquals(3, Collections.list(keyStore.aliases()).size());
     }
 
+    /**
+     * Tests that an endpoint secured with a post-quantum (ML-DSA / NIST FIPS 204)
+     * signed CA certificate is parsed and loaded into the trust store. This
+     * guards the BouncyCastle fallback in {@link ClowderConfigSource#buildX509Cert}
+     * for JDKs whose default providers don't recognise ML-DSA OIDs. See
+     * ENGPROD-10262.
+     */
+    @Test
+    void testSecuredEndpointMlDsaCert() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        ClowderConfigSource cc = configSourceWithFile("/cdappconfig_secured_endpoint_mldsa.json", exposeKafkaSslConfigKeys);
+
+        assertEquals("https://n-api.svc:9999", cc.getValue("clowder.endpoints.notifications-api.url"));
+
+        String path = cc.getValue("clowder.endpoints.notifications-api.trust-store-path");
+        String password = cc.getValue("clowder.endpoints.notifications-api.trust-store-password");
+        String type = cc.getValue("clowder.endpoints.notifications-api.trust-store-type");
+
+        assertNotNull(path);
+        assertNotNull(password);
+        assertNotNull(type);
+
+        KeyStore keyStore = KeyStore.getInstance(type);
+        keyStore.load(new FileInputStream(path), password.toCharArray());
+
+        assertEquals(1, Collections.list(keyStore.aliases()).size());
+    }
+
     @Test
     void testWhenTlsPortIsOff() {
         ClowderConfigSource cc = configSourceWithFile("/cdappconfig_tls_is_off.json", exposeKafkaSslConfigKeys);

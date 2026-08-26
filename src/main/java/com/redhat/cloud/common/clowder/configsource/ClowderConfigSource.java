@@ -2,6 +2,7 @@ package com.redhat.cloud.common.clowder.configsource;
 
 import com.redhat.cloud.common.clowder.configsource.handlers.ClowderPropertyHandler;
 import io.smallrye.config.ConfigValue;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.logging.Logger;
 
@@ -14,6 +15,8 @@ import java.nio.file.Files;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -230,11 +233,35 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     private X509Certificate buildX509Cert(byte[] cert) {
+        // First try the default JDK security providers. This preserves the
+        // existing behaviour for classic RSA/ECDSA certificates and, on Java 24+,
+        // also handles post-quantum algorithms such as ML-DSA (NIST FIPS 204)
+        // natively.
         try {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
             return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(cert));
-        } catch (CertificateException certificateException) {
-            throw new IllegalStateException("Couldn't load the x509 certificate factory", certificateException);
+        } catch (CertificateException defaultProviderException) {
+            // The default provider could not parse the certificate. This happens
+            // on JDKs whose registered providers don't know the certificate's
+            // signature algorithm OID (e.g. ML-DSA on Java < 24). Fall back to
+            // BouncyCastle, which recognises post-quantum OIDs. See ENGPROD-10262.
+            return buildX509CertWithBouncyCastle(cert, defaultProviderException);
+        }
+    }
+
+    private X509Certificate buildX509CertWithBouncyCastle(byte[] cert, CertificateException defaultProviderException) {
+        try {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+            }
+            CertificateFactory factory = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME);
+            return (X509Certificate) factory.generateCertificate(new ByteArrayInputStream(cert));
+        } catch (CertificateException | NoSuchProviderException bouncyCastleException) {
+            IllegalStateException ise = new IllegalStateException(
+                    "Couldn't load the x509 certificate factory", bouncyCastleException);
+            // Keep the original failure around so both parsing attempts are visible.
+            ise.addSuppressed(defaultProviderException);
+            throw ise;
         }
     }
 
