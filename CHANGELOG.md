@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.11.0...v2.12.0)
+
+### Features
+
+* feat: support ML-DSA (PQC) certs via BouncyCastle fallback (#391) ([9abc54d](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/9abc54dc9bb1e04ef194e6802ce62e132748a8c6))
+
+
 ## [2.11.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.10.0...v2.11.0)
 
 ### Features
