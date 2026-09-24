@@ -1,0 +1,37 @@
+{
+  "tlsCAPath": "target/test-classes/cert01.pem",
+  "endpoints": [
+    { "app": "rbac", "name": "service", "hostname": "rbac.svc", "tlsPort": 8443 },
+    { "app": "legacy", "name": "service", "hostname": "legacy.svc", "port": 8000 }
+  ],
+  "privateEndpoints": [
+    { "app": "export-service", "name": "service", "hostname": "export.svc", "port": 10000 }
+  ],
+  "dependencyEndpoints": {
+    "v2": {
+      "rbac": {
+        "service": { "uri": "https://rbac.remote.example:443/base", "authenticated": true }
+      },
+      "local": {
+        "one": {
+          "uri": "https://one.svc:8443", "authenticated": false,
+          "ca_certificate": "target/test-classes/cert01.pem"
+        },
+        "two": {
+          "uri": "https://two.svc:8443", "authenticated": false,
+          "ca_certificate": "target/test-classes/cert02.pem"
+        }
+      },
+      "app-with-hyphens": {
+        "service-with-hyphens": { "uri": "http://plain.svc:8000", "authenticated": false }
+      }
+    }
+  },
+  "privateDependencyEndpoints": {
+    "v2": {
+      "export-service": {
+        "service": { "uri": "https://export.remote.example:443", "authenticated": true }
+      }
+    }
+  }
+}
