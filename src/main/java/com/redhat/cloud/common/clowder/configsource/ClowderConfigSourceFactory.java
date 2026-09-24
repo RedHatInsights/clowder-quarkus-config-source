@@ -3,6 +3,7 @@ package com.redhat.cloud.common.clowder.configsource;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.cloud.common.clowder.configsource.handlers.ClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.DependencyEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.EndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.KafkaBootstrapServersClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.KafkaSecurityClowderPropertyHandler;
@@ -77,6 +78,10 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
                 new OptionalEndpointsClowderPropertyHandler(root),
                 new OptionalPrivateEndpointsClowderPropertyHandler(root),
                 new PrivateEndpointsClowderPropertyHandler(root),
+                new DependencyEndpointsClowderPropertyHandler(root, false, false),
+                new DependencyEndpointsClowderPropertyHandler(root, false, true),
+                new DependencyEndpointsClowderPropertyHandler(root, true, false),
+                new DependencyEndpointsClowderPropertyHandler(root, true, true),
                 new MicroprofileMessagingClowderPropertyHandler(root),
                 new QuarkusUnleashClowderPropertyHandler(root),
                 new QuarkusRedisClowderPropertyHandler(root));
