@@ -117,11 +117,12 @@ public class MyService {
 
 == V2 dependency endpoints
 
-Opt-in, V2-first lookups for the
+Opt-in lookups for the
 https://github.com/RedHatInsights/clowder/blob/master/ARCHITECTURE.md#v2-dependency-endpoints[Clowder V2 endpoint contract].
 The existing `clowder.endpoints`, `clowder.private-endpoints`, and their optional variants remain V1-only.
-Applications must opt in when their HTTP clients are ready to honor the authentication and TLS metadata.
-Upgrading this library alone does not enable workload authentication.
+V2 property prefixes never invent values from the V1 arrays. Applications choose which set to read,
+keep V1 available for runtime fallback if needed, and opt in when HTTP clients can honor authentication
+and TLS metadata. Upgrading this library alone does not enable workload authentication.
 
 === Migrating from V1 property names
 
@@ -131,6 +132,7 @@ V2 properties keep application and deployment names separate and use `uri`
 (for example `clowder.dependency-endpoints.rbac.service.uri`).
 The deployment key is the ClowdApp / ClowdAppRef deployment name (typically `service`).
 Clowder currently emits one V2 entry per deployment and prefers the TLS URI when TLS is enabled.
+Wire both property families when you need V1 and V2 side by side.
 
 Clowder supplies the following metadata (public and private endpoints have the same structure):
 
@@ -188,22 +190,17 @@ the values to their client configuration, treat absent truststore settings as sy
 `authenticated` to select the appropriate authentication path. Do not carry an unrelated global CA
 into a V2 client. Existing environment/system-property overrides retain their higher priority.
 
-=== Selection and fallback
+=== Selection
 
 * Select the requested application's/deployment's V2 entry when it has a nonblank `uri`.
   Preserve the full URI, including scheme, port, and any base path.
-* If the V2 entry or URI is absent/blank, fall back to the matching V1 endpoint in the same
-  public/private section. V1 yields `authenticated=false` (no new workload-token requirement),
-  and keeps its existing TLS-port/global-CA behavior. Existing application authentication such
-  as an Export Service PSK remains the application's responsibility.
-* Read URI, authentication flag, and CA from the same selected endpoint. Never mix V1 and V2 metadata.
-* A populated but invalid V2 URI or missing `authenticated` flag fails the lookup, rather than
-  silently downgrading to V1. HTTP(S) URIs without embedded credentials or fragments are accepted.
-* With neither a V2 map nor a V1 array, a required lookup fails and an optional lookup returns no
-  value, allowing typed defaults such as `authenticated:false` to work. This deliberately differs
-  from the old optional properties' empty-string convention, which suppresses expression defaults.
-  Old properties keep their existing behavior. With a section present but no matching endpoint,
-  return no value so a property-expression default can apply.
+* Read URI, authentication flag, and CA from that V2 entry only. Do not mix in V1 endpoint fields.
+* A populated but invalid V2 URI or missing `authenticated` flag fails the lookup.
+  HTTP(S) URIs without embedded credentials or fragments are accepted.
+* If the V2 map is absent, or the app/deployment is missing, or the URI is blank, return no value
+  so a property-expression default can apply (or the application can use V1 properties instead).
+* This deliberately differs from the old optional V1 properties' empty-string convention, which
+  suppresses expression defaults. Old V1 properties keep their existing behavior.
 * No Clowder file retains the existing behavior: no Clowder config source is installed, allowing local defaults.
 
 === TLS trust

@@ -32,12 +32,12 @@ class DependencyEndpointsFactoryTest {
     }
 
     @Test
-    void v1OnlyFileResolvesThroughFactory() {
+    void v1OnlyFileKeepsV1PropertiesAndLeavesV2ExpressionsOnDefaults() {
         SmallRyeConfig config = config("target/test-classes/cdappconfig5.json", Map.of(
-                "rbac.url", "${clowder.dependency-endpoints.notifications.api.uri}",
-                "rbac.authenticated", "${clowder.dependency-endpoints.notifications.api.authenticated}"));
-        assertEquals("http://notifications-api.svc:9876", config.getValue("rbac.url", String.class));
+                "v1.url", "${clowder.endpoints.notifications-api.url}"));
+        assertEquals("http://localhost:8080", config.getValue("rbac.url", String.class));
         assertFalse(config.getValue("rbac.authenticated", Boolean.class));
+        assertEquals("http://notifications-api.svc:9876", config.getValue("v1.url", String.class));
     }
 
     @Test
