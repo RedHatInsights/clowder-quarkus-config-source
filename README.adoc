@@ -115,13 +115,22 @@ public class MyService {
 }
 ----
 
-== V2 dependency endpoints (POC)
+== V2 dependency endpoints
 
-This POC adds opt-in, V2-first lookups for the
+Opt-in, V2-first lookups for the
 https://github.com/RedHatInsights/clowder/blob/master/ARCHITECTURE.md#v2-dependency-endpoints[Clowder V2 endpoint contract].
 The existing `clowder.endpoints`, `clowder.private-endpoints`, and their optional variants remain V1-only.
-Applications must opt in when their HTTP clients are ready to honor the authentication and TLS metadata;
-upgrading this library alone does not enable workload authentication.
+Applications must opt in when their HTTP clients are ready to honor the authentication and TLS metadata.
+Upgrading this library alone does not enable workload authentication.
+
+=== Migrating from V1 property names
+
+V1 properties use a single hyphenated endpoint token and a `url` parameter
+(for example `clowder.endpoints.rbac-service.url`).
+V2 properties keep application and deployment names separate and use `uri`
+(for example `clowder.dependency-endpoints.rbac.service.uri`).
+The deployment key is the ClowdApp / ClowdAppRef deployment name (typically `service`).
+Clowder currently emits one V2 entry per deployment and prefers the TLS URI when TLS is enabled.
 
 Clowder supplies the following metadata (public and private endpoints have the same structure):
 
@@ -155,10 +164,10 @@ Clowder supplies the following metadata (public and private endpoints have the s
 Use `<prefix>.<app>.<deployment>.<parameter>`, keeping application and deployment names separate
 (including names containing hyphens). The new prefixes are:
 
-* `clowder.dependency-endpoints` — public
-* `clowder.optional-dependency-endpoints` — optional public
-* `clowder.private-dependency-endpoints` — private
-* `clowder.optional-private-dependency-endpoints` — optional private
+* `clowder.dependency-endpoints` - public
+* `clowder.optional-dependency-endpoints` - optional public
+* `clowder.private-dependency-endpoints` - private
+* `clowder.optional-private-dependency-endpoints` - optional private
 
 Supported parameters are `uri`, `authenticated`, `ca-certificate`, `trust-store-path`,
 `trust-store-password`, and `trust-store-type`.
@@ -187,13 +196,13 @@ into a V2 client. Existing environment/system-property overrides retain their hi
   public/private section. V1 yields `authenticated=false` (no new workload-token requirement),
   and keeps its existing TLS-port/global-CA behavior. Existing application authentication such
   as an Export Service PSK remains the application's responsibility.
-* Read URI, authentication flag, and CA from the same selected endpoint; never mix V1 and V2 metadata.
+* Read URI, authentication flag, and CA from the same selected endpoint. Never mix V1 and V2 metadata.
 * A populated but invalid V2 URI or missing `authenticated` flag fails the lookup, rather than
-  silently downgrading to V1. This POC accepts HTTP(S) URIs without embedded credentials or fragments.
+  silently downgrading to V1. HTTP(S) URIs without embedded credentials or fragments are accepted.
 * With neither a V2 map nor a V1 array, a required lookup fails and an optional lookup returns no
   value, allowing typed defaults such as `authenticated:false` to work. This deliberately differs
-  from the old optional properties' empty-string convention, which suppresses expression defaults;
-  old properties keep their existing behavior. With a section present but no matching endpoint,
+  from the old optional properties' empty-string convention, which suppresses expression defaults.
+  Old properties keep their existing behavior. With a section present but no matching endpoint,
   return no value so a property-expression default can apply.
 * No Clowder file retains the existing behavior: no Clowder config source is installed, allowing local defaults.
 
@@ -201,29 +210,17 @@ into a V2 client. Existing environment/system-property overrides retain their hi
 
 V2 `ca_certificate` is exposed as `ca-certificate`. When supplied, its PEM certificate(s) are
 converted to a PKCS12 truststore, cached per normalized CA path. Different CAs have different
-truststores. An absent/blank V2 CA yields no custom truststore settings, even when `tlsCAPath` is set;
-the consuming client must then use its system truststore. Unreadable or invalid supplied CAs fail
+truststores. An absent/blank V2 CA yields no custom truststore settings, even when `tlsCAPath` is set.
+The consuming client must then use its system truststore. Unreadable or invalid supplied CAs fail
 truststore creation and never enable trust-all or silently substitute the global CA.
 
 CA files are read lazily and cached for the config source's lifetime, as with existing V1 behavior.
-Hot certificate rotation, OAuth/token handling, and application client changes are outside this POC.
+Hot certificate rotation, OAuth/token handling, and application client wiring are outside this library.
 
 === Validation
 
-Run `mvn test` to exercise the existing V1 suite, new V2 selection/trust tests, and actual SmallRye
-configuration-factory expression and override tests. Native-image builds and live cross-cluster
-traffic have not been validated by this POC.
-
-To build a distinctly labeled local POC artifact without publishing or installing it:
-
-[source,shell]
-----
-mvn -Drevision=2.12.0-SWATCH-5598-SNAPSHOT package
-----
-
-The library JAR is `target/clowder-quarkus-config-source-2.12.0-SWATCH-5598-SNAPSHOT.jar`.
-Use a separately agreed snapshot/release version when adopting the work in an application;
-do not overwrite the published `2.12.0` artifact with this POC.
+Run `mvn test` to exercise the existing V1 suite, new V2 selection/trust tests, and SmallRye
+configuration-factory expression and override tests.
 
 == Further reading
 
