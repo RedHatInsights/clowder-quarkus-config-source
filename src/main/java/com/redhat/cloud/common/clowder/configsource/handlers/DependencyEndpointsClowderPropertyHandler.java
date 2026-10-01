@@ -15,26 +15,35 @@ import java.util.Set;
  */
 public class DependencyEndpointsClowderPropertyHandler extends ClowderPropertyHandler {
 
+    private static final String CLOWDER_DEPENDENCY_ENDPOINTS = "clowder.dependency-endpoints.";
     private static final Set<String> PARAMETERS = Set.of("uri", "authenticated", "ca-certificate",
             "trust-store-path", "trust-store-password", "trust-store-type");
 
-    private final boolean privateEndpoints;
-    private final String prefix;
-
-    public DependencyEndpointsClowderPropertyHandler(ClowderConfig root, boolean privateEndpoints, boolean optional) {
-        super(root);
-        this.privateEndpoints = privateEndpoints;
-        this.prefix = "clowder." + (optional ? "optional-" : "")
-                + (privateEndpoints ? "private-" : "") + "dependency-endpoints.";
+    public DependencyEndpointsClowderPropertyHandler(ClowderConfig clowderConfig) {
+        super(clowderConfig);
     }
 
     @Override
     public boolean handles(String property) {
-        return property.startsWith(prefix);
+        return property.startsWith(getPropertyEndpointKey());
     }
 
     @Override
     public String handle(String property, ClowderConfigSource source) {
+        return processDependencyEndpoints(property, source, clowderConfig.dependencyEndpoints);
+    }
+
+    protected String getPropertyEndpointKey() {
+        return CLOWDER_DEPENDENCY_ENDPOINTS;
+    }
+
+    /**
+     * Resolves a V2 dependency-endpoint property. Missing V2 returns null so property-expression
+     * defaults and parallel V1 keys work. Applications own V1 vs V2 selection and runtime fallback.
+     */
+    protected String processDependencyEndpoints(String property, ClowderConfigSource source,
+            DependencyEndpointsConfig versioned) {
+        String prefix = getPropertyEndpointKey();
         String[] path = property.substring(prefix.length()).split("\\.", -1);
         if (path.length != 3 || path[0].isBlank() || path[1].isBlank() || path[2].isBlank()) {
             throw new IllegalArgumentException("Expected " + prefix + "<app>.<deployment>.<parameter>");
@@ -44,11 +53,7 @@ public class DependencyEndpointsClowderPropertyHandler extends ClowderPropertyHa
             return null;
         }
 
-        DependencyEndpointsConfig versioned = privateEndpoints
-                ? clowderConfig.privateDependencyEndpoints : clowderConfig.dependencyEndpoints;
         Map<String, Map<String, DependencyEndpointConfig>> v2 = versioned == null ? null : versioned.v2;
-        // Missing V2 returns null so property-expression defaults and parallel V1 keys work.
-        // Applications own V1 vs V2 selection and runtime fallback.
         if (v2 == null) {
             return null;
         }
