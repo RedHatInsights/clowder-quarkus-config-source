@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.redhat.cloud.common.clowder.configsource.utils.CertUtils.createTempFile;
@@ -52,8 +54,10 @@ public class ClowderConfigSource implements ConfigSource {
     private final Map<String, ConfigValue> existingValues;
     private final List<ClowderPropertyHandler> handlers;
 
-    private String trustStorePath;
-    private String trustStorePassword;
+    // Share stores only when the selected CA path is the same, never across different CAs.
+    private final Map<String, TrustStore> trustStores = new ConcurrentHashMap<>();
+
+    private record TrustStore(String path, String password) { }
 
     /**
      * <p>Constructor for ClowderConfigSource.</p>
@@ -145,30 +149,38 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     public String getTrustStorePassword() {
-        if (trustStorePassword == null) {
-            initializeTrustStoreCertificate();
-        }
-
-        return trustStorePassword;
+        ensureTlsCertPathIsPresent();
+        return getTrustStorePassword(root.tlsCAPath);
     }
 
     public String getTrustStorePath() {
-        if (trustStorePath == null) {
-            initializeTrustStoreCertificate();
-        }
+        ensureTlsCertPathIsPresent();
+        return getTrustStorePath(root.tlsCAPath);
+    }
 
-        return trustStorePath;
+    public String getTrustStorePassword(String caPath) {
+        return getTrustStore(caPath).password();
+    }
+
+    public String getTrustStorePath(String caPath) {
+        return getTrustStore(caPath).path();
+    }
+
+    private TrustStore getTrustStore(String caPath) {
+        if (caPath == null || caPath.isBlank()) {
+            throw new IllegalStateException("A CA certificate path is required to build a truststore");
+        }
+        String key = Path.of(caPath).toAbsolutePath().normalize().toString();
+        return trustStores.computeIfAbsent(key, this::initializeTrustStoreCertificate);
     }
 
     public String getTrustStoreType() {
         return CLOWDER_CERTIFICATE_STORE_TYPE;
     }
 
-    private void initializeTrustStoreCertificate() {
-        ensureTlsCertPathIsPresent();
-
+    private TrustStore initializeTrustStoreCertificate(String caPath) {
         try {
-            String certContent = Files.readString(new File(root.tlsCAPath).toPath(), UTF_8);
+            String certContent = Files.readString(Path.of(caPath), UTF_8);
             List<String> base64Certs = readCerts(certContent);
 
             List<X509Certificate> certificates = parsePemCert(base64Certs)
@@ -193,14 +205,15 @@ public class ClowderConfigSource implements ConfigSource {
             }
 
             char[] password = buildPassword(base64Certs.get(0));
-            this.trustStorePath = writeTruststore(truststore, password);
-            this.trustStorePassword = new String(password);
+            return new TrustStore(writeTruststore(truststore, password), new String(password));
         } catch (IOException ioe) {
-            throw new IllegalStateException("Couldn't load the certificate, but we were requested a truststore", ioe);
+            throw new IllegalStateException("Couldn't load the CA certificate at " + caPath, ioe);
         } catch (KeyStoreException kse) {
             throw new IllegalStateException("Couldn't load the keystore format PKCS12", kse);
         } catch (NoSuchAlgorithmException | CertificateException ce) {
             throw new IllegalStateException("Couldn't configure the keystore", ce);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Invalid CA certificate at " + caPath, e);
         }
     }
 
@@ -268,7 +281,9 @@ public class ClowderConfigSource implements ConfigSource {
     private String writeTruststore(KeyStore keyStore, char[] password) {
         try {
             File file = createTempFile("truststore", ".trust");
-            keyStore.store(new FileOutputStream(file), password);
+            try (FileOutputStream output = new FileOutputStream(file)) {
+                keyStore.store(output, password);
+            }
             return file.getAbsolutePath();
         } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
             throw new RuntimeException("Truststore creation failed", e);

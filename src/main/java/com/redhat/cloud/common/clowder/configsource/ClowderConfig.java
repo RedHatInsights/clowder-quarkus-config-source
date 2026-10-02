@@ -11,6 +11,8 @@ public class ClowderConfig {
     public InMemoryDb inMemoryDb;
     public List<EndpointConfig> endpoints;
     public List<PrivateEndpointConfig> privateEndpoints;
+    public DependencyEndpointsConfig dependencyEndpoints;
+    public DependencyEndpointsConfig privateDependencyEndpoints;
     public KafkaConfig kafka;
     public LoggingConfig logging;
     public FeatureFlagsConfig featureFlags;

@@ -3,12 +3,16 @@ package com.redhat.cloud.common.clowder.configsource;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.cloud.common.clowder.configsource.handlers.ClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.DependencyEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.EndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.KafkaBootstrapServersClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.KafkaSecurityClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.MicroprofileMessagingClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.OptionalDependencyEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.OptionalEndpointsClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.OptionalPrivateDependencyEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.OptionalPrivateEndpointsClowderPropertyHandler;
+import com.redhat.cloud.common.clowder.configsource.handlers.PrivateDependencyEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.PrivateEndpointsClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusDataSourceClowderPropertyHandler;
 import com.redhat.cloud.common.clowder.configsource.handlers.QuarkusLogCloudWatchClowderPropertyHandler;
@@ -77,6 +81,10 @@ public class ClowderConfigSourceFactory implements ConfigSourceFactory {
                 new OptionalEndpointsClowderPropertyHandler(root),
                 new OptionalPrivateEndpointsClowderPropertyHandler(root),
                 new PrivateEndpointsClowderPropertyHandler(root),
+                new DependencyEndpointsClowderPropertyHandler(root),
+                new OptionalDependencyEndpointsClowderPropertyHandler(root),
+                new OptionalPrivateDependencyEndpointsClowderPropertyHandler(root),
+                new PrivateDependencyEndpointsClowderPropertyHandler(root),
                 new MicroprofileMessagingClowderPropertyHandler(root),
                 new QuarkusUnleashClowderPropertyHandler(root),
                 new QuarkusRedisClowderPropertyHandler(root));
