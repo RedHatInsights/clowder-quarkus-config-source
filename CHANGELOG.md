@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.12.0...v2.13.0)
+
+### Features
+
+* feat: add Clowder V2 dependency endpoint support (#399) ([084224a](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/084224a78f76b8a3b04a5c5a48be1df032301cec))
+
+
 ## [2.12.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.11.0...v2.12.0)
 
 ### Features
