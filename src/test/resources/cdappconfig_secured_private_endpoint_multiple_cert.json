@@ -1,0 +1,68 @@
+{
+  "database": {
+    "adminPassword": "s3cr3t",
+    "adminUsername": "postgres",
+    "hostname": "some.host",
+    "name": "some-db",
+    "password": "secret",
+    "port": 15432,
+    "sslMode": "require",
+    "username": "aUser"
+  },
+  "privateEndpoints": [
+    {
+      "app": "notifications",
+      "hostname": "notifications-api.svc",
+      "name": "api",
+      "tlsPort": 9876
+    }
+  ],
+  "kafka": {
+    "brokers": [
+      {
+        "hostname": "ephemeral-host.svc",
+        "port": 29092
+      }
+    ],
+    "topics": [
+      {
+        "name": "platform-tmp-12345",
+        "requestedName": "platform.notifications.ingress"
+      },
+      {
+        "name": "platform-tmp-666",
+        "requestedName": "platform.notifications.alerts"
+      }
+    ]
+  },
+  "logging": {
+    "cloudwatch": {
+      "accessKeyId": "my-key-id",
+      "logGroup": "my-log-group",
+      "region": "eu-central-1",
+      "secretAccessKey": "very-secret"
+    },
+    "type": "cloudwatch"
+  },
+  "metricsPath": "/metrics",
+  "metricsPort": 9000,
+  "objectStore": {
+    "accessKey": "secret",
+    "buckets": [
+      {
+        "accessKey": "more-secret",
+        "name": "returned-name",
+        "requestedName": "a-bucket",
+        "secretKey": "really-secret"
+      }
+    ],
+    "hostname": "minio12345.svc",
+    "port": 9000,
+    "secretKey": "another-secret",
+    "tls": false
+  },
+  "privatePort": 10000,
+  "publicPort": 8000,
+  "webPort": 8000,
+  "tlsCAPath": "target/test-classes/cert02.pem"
+}
