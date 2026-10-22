@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.13.0...v2.13.1)
+
+### Bug Fixes
+
+* fix(fullsend): trigger review only via /fs-review, not every commit (#403) ([ec0d0b4](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/ec0d0b47cbe4e698b2870bbdcca08fe2ee698db2))
+
+
 ## [2.13.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.12.0...v2.13.0)
 
 ### Features
