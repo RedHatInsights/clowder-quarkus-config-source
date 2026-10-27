@@ -150,6 +150,22 @@ class DependencyEndpointsTest {
     }
 
     @Test
+    void v2TruststoreWorksWhenRootTlsCaPathIsAbsent() throws Exception {
+        root.tlsCAPath = null;
+        root.dependencyEndpoints.v2.get("rbac").get("service").caCertificate =
+                "target/test-classes/cert01.pem";
+        ClowderConfigSource source = source();
+
+        assertNull(source.getTrustStorePath());
+        assertNull(source.getTrustStorePassword());
+        assertEquals(
+                "https://rbac.remote.example:443/base",
+                source.getValue(PUBLIC + "rbac.service.uri"));
+        assertStoreContainsOnly(source, PUBLIC + "rbac.service.", "cert01.pem");
+        assertEquals("PKCS12", source.getValue(PUBLIC + "rbac.service.trust-store-type"));
+    }
+
+    @Test
     void unreadableCaDoesNotFallBackToGlobalTrust() {
         root.dependencyEndpoints.v2.get("rbac").get("service").caCertificate = temp.resolve("missing.pem").toString();
         ClowderConfigSource source = source();
