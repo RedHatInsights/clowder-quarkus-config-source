@@ -97,19 +97,26 @@ public class EndpointsClowderPropertyHandler extends ClowderPropertyHandler {
                     return String.format("http://%s:%s", endpointConfig.hostname, endpointConfig.port);
                 }
             case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PATH:
-                if (usesTls(endpointConfig)) {
-                    return configSource.getTrustStorePath();
+                if (!usesTls(endpointConfig)) {
+                    return null;
                 }
 
-                return null;
+                String trustStorePath = configSource.getTrustStorePath();
+                if (trustStorePath == null) {
+                    configSource.getLogger().warnf(
+                            "Endpoint '%s' uses TLS but tlsCAPath is not configured; trust-store-path unavailable",
+                            requestedEndpoint);
+                }
+
+                return trustStorePath;
             case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_PASSWORD:
-                if (usesTls(endpointConfig)) {
-                    return configSource.getTrustStorePassword();
+                if (!usesTls(endpointConfig)) {
+                    return null;
                 }
 
-                return null;
+                return configSource.getTrustStorePassword();
             case CLOWDER_ENDPOINTS_PARAM_TRUST_STORE_TYPE:
-                if (usesTls(endpointConfig)) {
+                if (usesTls(endpointConfig) && configSource.hasTlsCaPath()) {
                     return configSource.getTrustStoreType();
                 }
 

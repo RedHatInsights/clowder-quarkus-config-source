@@ -149,12 +149,18 @@ public class ClowderConfigSource implements ConfigSource {
     }
 
     public String getTrustStorePassword() {
-        ensureTlsCertPathIsPresent();
+        if (!hasTlsCaPath()) {
+            return null;
+        }
+
         return getTrustStorePassword(root.tlsCAPath);
     }
 
     public String getTrustStorePath() {
-        ensureTlsCertPathIsPresent();
+        if (!hasTlsCaPath()) {
+            return null;
+        }
+
         return getTrustStorePath(root.tlsCAPath);
     }
 
@@ -217,10 +223,8 @@ public class ClowderConfigSource implements ConfigSource {
         }
     }
 
-    private void ensureTlsCertPathIsPresent() {
-        if (root.tlsCAPath == null || root.tlsCAPath.isBlank()) {
-            throw new IllegalStateException("Requested tls port for endpoint but did not provide tlsCAPath");
-        }
+    public boolean hasTlsCaPath() {
+        return root.tlsCAPath != null && !root.tlsCAPath.isBlank();
     }
 
     static List<String> readCerts(String certString) {

@@ -646,6 +646,23 @@ public class ConfigSourceTest {
     }
 
     @Test
+    void testPrivateEndpointTlsWithoutTlsCaPathReturnsNullTruststore() {
+        ClowderConfigSource cc =
+                configSourceWithFile("/cdappconfig_tls_without_tlscapath.json", exposeKafkaSslConfigKeys);
+
+        assertEquals(
+                "https://export-service.svc:10443",
+                cc.getValue("clowder.optional-private-endpoints.export-service-service.url"));
+        assertNull(
+                cc.getValue("clowder.optional-private-endpoints.export-service-service.trust-store-path"));
+        assertNull(
+                cc.getValue(
+                        "clowder.optional-private-endpoints.export-service-service.trust-store-password"));
+        assertNull(
+                cc.getValue("clowder.optional-private-endpoints.export-service-service.trust-store-type"));
+    }
+
+    @Test
     void singleCertificateParse() throws IOException {
         String certContent = readFile("/cert01.pem");
         List<String> certs = ClowderConfigSource.readCerts(certContent);

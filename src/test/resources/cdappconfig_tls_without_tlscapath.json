@@ -1,0 +1,11 @@
+{
+  "privateEndpoints": [
+    {
+      "app": "export-service",
+      "hostname": "export-service.svc",
+      "name": "service",
+      "port": 10000,
+      "tlsPort": 10443
+    }
+  ]
+}
