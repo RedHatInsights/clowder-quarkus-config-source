@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.14.0](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.13.1...v2.14.0)
+
+### Features
+
+* feat: bump Quarkus into 3.40.1.1 (#409) ([baa1f00](https://github.com/RedHatInsights/clowder-quarkus-config-source/commit/baa1f00dcfc5bc1cfaf792de51fcc907714f328c))
+
+
 ## [2.13.1](https://github.com/RedHatInsights/clowder-quarkus-config-source/compare/v2.13.0...v2.13.1)
 
 ### Bug Fixes
