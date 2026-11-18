@@ -63,7 +63,7 @@ jobs:
             gh release create "v${RELEASE_VERSION}" --repo "${{ github.repository }}" --title "v${RELEASE_VERSION}" --target "${{ github.sha }}" --generate-notes
           fi
       - name: Set up Maven Central Repository
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: 17
           distribution: adopt
