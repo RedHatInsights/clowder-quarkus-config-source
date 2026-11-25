@@ -31,3 +31,6 @@ hs_err_pid*
 target/
 
 .flattened-pom.xml
+
+# fullsend lint/run cache
+/.fullsend/.fullsend-cache/
